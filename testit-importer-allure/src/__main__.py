@@ -121,7 +121,10 @@ def console_main():
                 )
             )
 
-        testrun_id = requests.create_testrun(JSONFixture.create_testrun(reader.get_project_id(), f'AllureRun {datetime.today().strftime("%d %b %Y %H:%M:%S")}'))
+        if reader.specified_testrun:
+            testrun_id = reader.specified_testrun
+        else:
+            testrun_id = requests.create_testrun(JSONFixture.create_testrun(reader.get_project_id(), f'AllureRun {datetime.today().strftime("%d %b %Y %H:%M:%S")}'))
 
         if tests_results_data:
             requests.set_results_for_testrun(
