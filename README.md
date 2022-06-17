@@ -52,7 +52,8 @@ And fill parameters with your configuration, where:
 
 ### Importing
 
-Use the command `testit --resultsdir allure-results` to specify the directory with Allure report results.  
+Use the command `testit --resultsdir allure-results` to specify the directory with Allure report results and create new test run in TMS instance.  
+Or use the command `testit --resultsdir allure-results --testrunid <id>` to specify the directory with Allure report results and id of test run in TMS instance.
 **Important:** This command initiates the import.
 
 # Contributing

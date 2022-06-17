@@ -10,7 +10,7 @@ import hashlib
 class AttributeReader:
     path_to_results = None
     path_to_config = None
-
+    specified_testrun = None
 
     def __init__(self):
         self.config = configparser.RawConfigParser()
@@ -48,7 +48,16 @@ class AttributeReader:
             action="store",
             dest="set_configuration",
             metavar="15dbb164-c1aa-4cbf-830c-8c01ae14f4fb",
-            help='Set configuration ID')
+            help='Set configuration ID'
+        )
+        self.parser.add_argument(
+            '-ti',
+            '--testrunid',
+            action="store",
+            dest="set_testrun",
+            metavar="3802f329-190c-4617-8bb0-2c3696abeb8f",
+            help='Set test run ID'
+        )
         self.parser.add_argument(
             '-sh',
             '--show',
@@ -123,6 +132,13 @@ class AttributeReader:
                 raise SystemExit
 
             self.config.set('testit', 'configurationID', args.set_configuration)
+
+        if args.set_testrun:
+            if not re.fullmatch(r'[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}', args.set_testrun):
+                print('The wrong testrun ID!')
+                raise SystemExit
+
+            self.specified_testrun = args.set_testrun
 
         if args.show_settings:
             print(f"url: {self.config.get('testit', 'url')}\nprivatetoken: {self.config.get('testit', 'privatetoken')}\nprojectID: {self.config.get('testit', 'projectID')}\nconfigurationID: {self.config.get('testit', 'configurationID')}")
