@@ -88,7 +88,7 @@ class AttributeReader:
                 container = json.load(open(file_path, encoding='UTF-8'))
 
                 if 'children' in container:
-                    data_before_after[round(os.stat(file_path).st_ctime_ns)] = container
+                    data_before_after[container['uuid']] = container
         elif file_extension == '.xml' and file_name[-9:] == 'testsuite':
             testsuite = xmltodict.parse(open(file_path, encoding='UTF-8').read())
 

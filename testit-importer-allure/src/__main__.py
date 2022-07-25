@@ -15,9 +15,12 @@ def console_main():
     data_tests, data_before_after = reader.get_attr()
 
     if data_tests:
-        data_before_after = dict(sorted(data_before_after.items(), key=lambda x: x[0]))
         requests = Api(reader.get_url(), reader.get_privatetoken())
-        tests_results_data = []
+
+        if reader.specified_testrun:
+            testrun_id = reader.specified_testrun
+        else:
+            testrun_id = requests.create_testrun(JSONFixture.create_testrun(reader.get_project_id(), f'AllureRun {datetime.today().strftime("%d %b %Y %H:%M:%S")}'))
 
         for history_id in data_tests:
             prefix = '' if 'uuid' in data_tests[history_id] else '@'
@@ -101,35 +104,26 @@ def console_main():
             for workitem_id in workitems_id:
                 requests.link_autotest(autotest_id, workitem_id)
 
-            tests_results_data.append(
-                JSONFixture.set_results_for_testrun(
+            requests.set_results_for_testrun(
+                testrun_id,
+                [JSONFixture.set_results_for_testrun(
                     history_id,
                     reader.get_configuration_id(),
                     outcome,
                     results_steps,
                     results_setup,
                     results_teardown,
-                    data_tests[history_id]['statusDetails']['trace'] if
-                        'statusDetails' in data_tests[history_id] and data_tests[history_id]['statusDetails'] and 'trace' in data_tests[history_id]['statusDetails'] else None,
+                    data_tests[history_id]['statusDetails'].get('trace') if
+                        'statusDetails' in data_tests[history_id] and data_tests[history_id]['statusDetails'] else None,
                     attachments,
                     form_parameters(data_tests[history_id]['parameters']) if 'parameters' in data_tests[history_id] else None,
+                    None,
                     links,
                     (int(data_tests[history_id][f'{prefix}stop']) - int(data_tests[history_id][f'{prefix}start'])) if f'{prefix}stop' in data_tests[history_id] else 0,
                     None,
                     data_tests[history_id]['statusDetails']['message'] if
                         'statusDetails' in data_tests[history_id] and data_tests[history_id]['statusDetails'] and 'message' in data_tests[history_id]['statusDetails'] else None
-                )
-            )
-
-        if reader.specified_testrun:
-            testrun_id = reader.specified_testrun
-        else:
-            testrun_id = requests.create_testrun(JSONFixture.create_testrun(reader.get_project_id(), f'AllureRun {datetime.today().strftime("%d %b %Y %H:%M:%S")}'))
-
-        if tests_results_data:
-            requests.set_results_for_testrun(
-                testrun_id,
-                tests_results_data
+                )]
             )
 
 
