@@ -1,54 +1,64 @@
-from testit_importer_allure.reader import AttributeReader
-from testit_importer_allure.utils import form_steps
-from testit_importer_allure.utils import form_labels_namespace_classname_workitems_id
-from testit_importer_allure.utils import form_links
-from testit_importer_allure.utils import form_setup_teardown
-from testit_importer_allure.utils import form_parameters
-from testit_importer_allure.utils import get_attachment
+from src.reader import Reader
+from src.configurator import Configurator
+from src.utils import form_steps
+from src.utils import form_labels_namespace_classname_workitems_id
+from src.utils import form_links
+from src.utils import form_setup_teardown
+from src.utils import form_parameters
+from src.utils import get_attachment
 from testit_api_client.api import Api
 from testit_api_client.json_fixture import JSONFixture
 from datetime import datetime
 
 
 def console_main():
-    reader = AttributeReader()
-    data_tests, data_before_after = reader.get_attr()
+    config = Configurator()
+    reader = Reader(config.get_path())
+    data_tests, data_before_after = reader.get_result()
 
     if data_tests:
-        requests = Api(reader.get_url(), reader.get_privatetoken())
+        requests = Api(config.get_url(), config.get_private_token())
 
-        if reader.specified_testrun:
-            testrun_id = reader.specified_testrun
+        if config.specified_testrun:
+            testrun_id = config.specified_testrun
         else:
-            testrun_id = requests.create_testrun(JSONFixture.create_testrun(reader.get_project_id(), f'AllureRun {datetime.today().strftime("%d %b %Y %H:%M:%S")}'))
+            testrun_id = requests.create_testrun(JSONFixture.create_testrun(config.get_project_id(),
+                                                                            f'AllureRun {datetime.today().strftime("%d %b %Y %H:%M:%S")}'))
 
         for history_id in data_tests:
             prefix = '' if 'uuid' in data_tests[history_id] else '@'
 
-            labels, namespace, classname, workitems_id = form_labels_namespace_classname_workitems_id(data_tests[history_id]['labels'])
+            labels, namespace, classname, workitems_id = form_labels_namespace_classname_workitems_id(
+                data_tests[history_id]['labels'])
 
-            attachments = get_attachment(requests, data_tests[history_id]['attachments'], reader.get_path()) if 'attachments' in data_tests[history_id] else []
+            attachments = get_attachment(requests, data_tests[history_id]['attachments'],
+                                         config.get_path()) if 'attachments' in data_tests[history_id] else []
 
-            setup, results_setup, teardown, results_teardown = form_setup_teardown(data_before_after, data_tests[history_id]['uuid'] if
-                                                                                        'uuid' in data_tests[history_id] else None, requests, reader.get_path())
+            setup, results_setup, teardown, results_teardown = form_setup_teardown(data_before_after,
+                                                                                   data_tests[history_id]['uuid'] if
+                                                                                   'uuid' in data_tests[
+                                                                                       history_id] else None, requests,
+                                                                                   config.get_path())
 
             if 'steps' in data_tests[history_id]:
-                steps, results_steps = form_steps(data_tests[history_id]['steps'], requests, reader.get_path())
+                steps, results_steps = form_steps(data_tests[history_id]['steps'], requests, config.get_path())
             else:
                 steps = []
                 results_steps = []
 
             links = form_links(data_tests[history_id]['links']) if 'links' in data_tests[history_id] else []
 
-            outcome = data_tests[history_id][f'{prefix}status'].title() if data_tests[history_id][f'{prefix}status'] in ('passed', 'skipped') else 'Failed'
+            outcome = data_tests[history_id][f'{prefix}status'].title() if data_tests[history_id][
+                                                                               f'{prefix}status'] in (
+                                                                           'passed', 'skipped') else 'Failed'
 
-            autotest = requests.get_autotest(history_id, reader.get_project_id()).json()
+            autotest = requests.get_autotest(history_id, config.get_project_id()).json()
 
             if not autotest:
                 autotest_id = requests.create_autotest(
                     JSONFixture.create_autotest(
                         history_id,
-                        reader.get_project_id(),
+                        config.get_project_id(),
                         data_tests[history_id]['name'],
                         steps,
                         setup,
@@ -68,7 +78,7 @@ def console_main():
                     requests.update_autotest(
                         JSONFixture.update_autotest(
                             history_id,
-                            reader.get_project_id(),
+                            config.get_project_id(),
                             data_tests[history_id]['name'],
                             autotest_id,
                             steps,
@@ -86,7 +96,7 @@ def console_main():
                     requests.update_autotest(
                         JSONFixture.update_autotest(
                             history_id,
-                            reader.get_project_id(),
+                            config.get_project_id(),
                             autotest[0]['name'],
                             autotest_id,
                             autotest[0]['steps'],
@@ -108,21 +118,24 @@ def console_main():
                 testrun_id,
                 [JSONFixture.set_results_for_testrun(
                     history_id,
-                    reader.get_configuration_id(),
+                    config.get_configuration_id(),
                     outcome,
                     results_steps,
                     results_setup,
                     results_teardown,
                     data_tests[history_id]['statusDetails'].get('trace') if
-                        'statusDetails' in data_tests[history_id] and data_tests[history_id]['statusDetails'] else None,
+                    'statusDetails' in data_tests[history_id] and data_tests[history_id]['statusDetails'] else None,
                     attachments,
-                    form_parameters(data_tests[history_id]['parameters']) if 'parameters' in data_tests[history_id] else None,
+                    form_parameters(data_tests[history_id]['parameters']) if 'parameters' in data_tests[
+                        history_id] else None,
                     None,
                     links,
-                    (int(data_tests[history_id][f'{prefix}stop']) - int(data_tests[history_id][f'{prefix}start'])) if f'{prefix}stop' in data_tests[history_id] else 0,
+                    (int(data_tests[history_id][f'{prefix}stop']) - int(
+                        data_tests[history_id][f'{prefix}start'])) if f'{prefix}stop' in data_tests[history_id] else 0,
                     None,
                     data_tests[history_id]['statusDetails']['message'] if
-                        'statusDetails' in data_tests[history_id] and data_tests[history_id]['statusDetails'] and 'message' in data_tests[history_id]['statusDetails'] else None
+                    'statusDetails' in data_tests[history_id] and data_tests[history_id][
+                        'statusDetails'] and 'message' in data_tests[history_id]['statusDetails'] else None
                 )]
             )
 
