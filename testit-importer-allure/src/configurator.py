@@ -1,3 +1,4 @@
+"""The module provides functionality for working with the config"""
 import argparse
 import configparser
 import os
@@ -12,6 +13,8 @@ CONFIG_NAME = 'connection_config.ini'
 
 
 class Configurator:
+    """Class representing a configurator"""
+
     path_to_results = None
     path_to_config = None
     specified_testrun = None
@@ -22,18 +25,23 @@ class Configurator:
         self.__parse_args()
 
     def get_path(self):
+        """Function returns path of result files."""
         return self.path_to_results
 
     def get_url(self):
+        """Function returns TMS url."""
         return self.config.get(CONFIG_SECTION, CONFIG_URL)
 
     def get_private_token(self):
+        """Function returns private token."""
         return self.config.get(CONFIG_SECTION, CONFIG_PRIVATE_TOKEN)
 
     def get_project_id(self):
+        """Function returns project id."""
         return self.config.get(CONFIG_SECTION, CONFIG_PROJECT_ID)
 
     def get_configuration_id(self):
+        """Function returns configuration id."""
         return self.config.get(CONFIG_SECTION, CONFIG_CONFIGURATION_ID)
 
     def __set_config(self):
@@ -107,10 +115,10 @@ class Configurator:
         args = self.parser.parse_args()
         if args.set_url:
             if not re.fullmatch(
-                    r'^(?:(?:(?:https?|ftp):)?//)?(?:(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25['
-                    r'0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-zA-Z0-9\u00a1-\uffff]['
-                    r'a-zA-Z0-9\u00a1-\uffff_-]{0,62})?[a-zA-Z0-9\u00a1-\uffff]\.)+(?:[a-zA-Z\u00a1-\uffff]{2,'
-                    r'}\.?))(?::\d{2,5})?(?:[/?#]\S*)?$',
+                    r"^(?:(?:(?:https?|ftp):)?//)?(?:(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25["
+                    r"0-5])){2}\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4])|(?:(?:[a-zA-Z\d\u00a1-\uffff]["
+                    r"a-zA-Z\d\u00a1-\uffff_-]{0,62})?[a-zA-Z\d\u00a1-\uffff]\.)+[a-zA-Z¡-￿]{2,}\.?"
+                    r")(?::\d{2,5})?(?:[/?#]\S*)?$",
                     args.set_url):
                 print('The wrong URL!')
                 raise SystemExit
@@ -122,7 +130,7 @@ class Configurator:
             self.config.set(CONFIG_SECTION, CONFIG_PRIVATE_TOKEN, args.set_privatetoken)
 
         if args.set_project:
-            if not re.fullmatch(r'[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}',
+            if not re.fullmatch(r"[a-zA-Z\d]{8}-[a-zA-Z\d]{4}-[a-zA-Z\d]{4}-[a-zA-Z\d]{4}-[a-zA-Z\d]{12}",
                                 args.set_project):
                 print('The wrong project ID!')
                 raise SystemExit
@@ -130,7 +138,7 @@ class Configurator:
             self.config.set(CONFIG_SECTION, CONFIG_PROJECT_ID, args.set_project)
 
         if args.set_configuration:
-            if not re.fullmatch(r'[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}',
+            if not re.fullmatch(r'[a-zA-Z\d]{8}-[a-zA-Z\d]{4}-[a-zA-Z\d]{4}-[a-zA-Z\d]{4}-[a-zA-Z\d]{12}',
                                 args.set_configuration):
                 print('The wrong configuration ID!')
                 raise SystemExit
@@ -138,7 +146,7 @@ class Configurator:
             self.config.set(CONFIG_SECTION, CONFIG_CONFIGURATION_ID, args.set_configuration)
 
         if args.set_testrun:
-            if not re.fullmatch(r'[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}',
+            if not re.fullmatch(r'[a-zA-Z\d]{8}-[a-zA-Z\d]{4}-[a-zA-Z\d]{4}-[a-zA-Z\d]{4}-[a-zA-Z\d]{12}',
                                 args.set_testrun):
                 print('The wrong testrun ID!')
                 raise SystemExit
@@ -150,8 +158,11 @@ class Configurator:
 
         if args.show_settings:
             print(
-                f"url: {self.config.get(CONFIG_SECTION, CONFIG_URL)}\nprivatetoken: {self.config.get(CONFIG_SECTION, CONFIG_PRIVATE_TOKEN)}\nprojectID: {self.config.get(CONFIG_SECTION, CONFIG_PROJECT_ID)}\nconfigurationID: {self.config.get(CONFIG_SECTION, CONFIG_CONFIGURATION_ID)}")
+                f'url: {self.config.get(CONFIG_SECTION, CONFIG_URL)}\n'
+                f'privatetoken: {self.config.get(CONFIG_SECTION, CONFIG_PRIVATE_TOKEN)}\n'
+                f'projectID: {self.config.get(CONFIG_SECTION, CONFIG_PROJECT_ID)}\n'
+                f'configurationID: {self.config.get(CONFIG_SECTION, CONFIG_CONFIGURATION_ID)}')
 
         if args.set_url or args.set_privatetoken or args.set_project or args.set_configuration:
-            with open(self.path_to_config, "w") as config_file:
+            with open(self.path_to_config, "w", encoding='utf-8') as config_file:
                 self.config.write(config_file)
