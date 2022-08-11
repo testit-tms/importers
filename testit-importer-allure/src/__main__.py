@@ -1,4 +1,4 @@
-from src.reader import Reader
+from src.filereader import FileReader
 from src.configurator import Configurator
 from src.utils import form_steps
 from src.utils import form_labels_namespace_classname_workitems_id
@@ -13,8 +13,8 @@ from datetime import datetime
 
 def console_main():
     config = Configurator()
-    reader = Reader(config.get_path())
-    data_tests, data_before_after = reader.get_result()
+    reader = FileReader(config.get_path())
+    data_tests, data_fixtures = reader.read_result_files()
 
     if data_tests:
         requests = Api(config.get_url(), config.get_private_token())
@@ -34,7 +34,7 @@ def console_main():
             attachments = get_attachment(requests, data_tests[history_id]['attachments'],
                                          config.get_path()) if 'attachments' in data_tests[history_id] else []
 
-            setup, results_setup, teardown, results_teardown = form_setup_teardown(data_before_after,
+            setup, results_setup, teardown, results_teardown = form_setup_teardown(data_fixtures,
                                                                                    data_tests[history_id]['uuid'] if
                                                                                    'uuid' in data_tests[
                                                                                        history_id] else None, requests,
@@ -50,7 +50,7 @@ def console_main():
 
             outcome = data_tests[history_id][f'{prefix}status'].title() if data_tests[history_id][
                                                                                f'{prefix}status'] in (
-                                                                           'passed', 'skipped') else 'Failed'
+                                                                               'passed', 'skipped') else 'Failed'
 
             autotest = requests.get_autotest(history_id, config.get_project_id()).json()
 
