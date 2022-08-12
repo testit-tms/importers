@@ -2,12 +2,12 @@
 import os
 import json
 import hashlib
-import dataclasses
 import xmltodict
+from interface import implements
+from src.reader import Reader
 
 
-@dataclasses.dataclass
-class FileReader:
+class FileReader(implements(Reader)):
     """Class representing a reader"""
 
     def __init__(self, path_to_results: str):
@@ -39,6 +39,9 @@ class FileReader:
             self.__read(file_path, file_name, file_extension)
 
         return self.__data_tests, self.__data_fixtures
+
+    def read_attachment(self, name: str):
+        return open(f"{self.__path_to_results}{name}", 'rb')
 
     def __read(self, file_path: str, file_name: str, file_extension: str):
         if file_extension == '.json':
