@@ -5,15 +5,15 @@ from datetime import datetime
 from testit_api_client import JSONFixture
 from .apiclient import ApiClient
 from .configurator import Configurator
-from .reader import Reader
+from .parser import Parser
 
 
 @dataclasses.dataclass
 class Importer:
     """Class representing an importer"""
 
-    def __init__(self, reader: Reader, api_client: ApiClient, config: Configurator):
-        self.__reader = reader
+    def __init__(self, parser: Parser, api_client: ApiClient, config: Configurator):
+        self.__parser = parser
         self.__api_client = api_client
         self.__project_id = config.get_project_id()
         self.__testrun_id = config.specified_testrun
@@ -24,7 +24,7 @@ class Importer:
         steps = []
         results_steps = []
 
-        data_tests, data_fixtures = self.__reader.read_result_files()
+        data_tests, data_fixtures = self.__parser.parse_results()
 
         self.__set_test_run()
 
@@ -151,7 +151,7 @@ class Importer:
             prefix = '' if 'source' in attachments[0] else '@'
 
             for attachment in attachments:
-                file = self.__reader.read_attachment(f"{attachment[f'{prefix}source']}")
+                file = self.__parser.parse_attachment(f"{attachment[f'{prefix}source']}")
 
                 attachment_id = self.__api_client.upload_attachment(file)
 

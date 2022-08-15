@@ -3,8 +3,11 @@ from interface import Interface
 
 class Reader(Interface):
 
-    def read_result_files(self):
+    def get_all_files(self):
         pass
 
-    def read_attachment(self, name: str):
+    def read_file(self, file_name: str):
+        pass
+
+    def read_attachment(self, file_name: str):
         pass
