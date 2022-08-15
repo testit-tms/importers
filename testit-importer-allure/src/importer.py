@@ -158,6 +158,8 @@ class Importer:
                 if attachment_id:
                     ids.append({'id': attachment_id})
 
+                self.__parser.clean_attachment(f"{attachment[f'{prefix}source']}")
+
         return ids
 
     def __get_data_from_labels(self, allure_labels):

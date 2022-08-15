@@ -11,3 +11,6 @@ class Reader(Interface):
 
     def read_attachment(self, file_name: str):
         pass
+
+    def remove_attachment(self, file_name: str):
+        pass
