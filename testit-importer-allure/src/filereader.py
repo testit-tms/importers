@@ -4,7 +4,7 @@ import json
 import hashlib
 import xmltodict
 from interface import implements
-from src.reader import Reader
+from .reader import Reader
 
 
 class FileReader(implements(Reader)):

@@ -1,7 +1,7 @@
-from src.filereader import FileReader
-from src.configurator import Configurator
-from src.importer import Importer
-from src.apiclient import ApiClient
+from .filereader import FileReader
+from .configurator import Configurator
+from .importer import Importer
+from .apiclient import ApiClient
 
 
 def console_main():

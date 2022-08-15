@@ -3,9 +3,9 @@ import re
 import dataclasses
 from datetime import datetime
 from testit_api_client import JSONFixture
-from src.apiclient import ApiClient
-from src.configurator import Configurator
-from src.reader import Reader
+from .apiclient import ApiClient
+from .configurator import Configurator
+from .reader import Reader
 
 
 @dataclasses.dataclass
