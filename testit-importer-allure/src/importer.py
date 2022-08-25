@@ -44,7 +44,10 @@ class Importer:
 
             links = self.__form_links(test['links']) if 'links' in test else []
 
-            outcome = test[f'{prefix}status'].title() if test[f'{prefix}status'] in ('passed', 'skipped') else 'Failed'
+            if hasattr(test, f'{prefix}status'):
+                outcome = test[f'{prefix}status'].title() if test[f'{prefix}status'] in ('passed', 'skipped') else 'Failed'
+            else:
+                outcome = 'Blocked'
 
             autotest = self.__api_client.get_autotest(history_id, self.__project_id)
 
