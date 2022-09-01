@@ -6,10 +6,21 @@ import re
 
 CONFIG_SECTION = 'testit'
 CONFIG_URL = 'url'
-CONFIG_PRIVATE_TOKEN = 'privatetoken'
+CONFIG_PRIVATE_TOKEN = 'privateToken'
 CONFIG_PROJECT_ID = 'projectID'
 CONFIG_CONFIGURATION_ID = 'configurationID'
 CONFIG_NAME = 'connection_config.ini'
+
+RABBITMQ_CONFIG_SECTION = 'rabbitmq'
+RABBITMQ_CONFIG_URL = 'host'
+RABBITMQ_CONFIG_USER = 'user'
+RABBITMQ_CONFIG_PASSWORD = 'password'
+RABBITMQ_CONFIG_EXCHANGE = 'exchange'
+
+MINIO_CONFIG_SECTION = 'minio'
+MINIO_CONFIG_URL = 'host'
+MINIO_CONFIG_ACCESS_KEY = 'accessKey'
+MINIO_CONFIG_SECRET_KEY = 'secretKey'
 
 
 class Configurator:
@@ -43,6 +54,34 @@ class Configurator:
     def get_configuration_id(self):
         """Function returns configuration id."""
         return self.config.get(CONFIG_SECTION, CONFIG_CONFIGURATION_ID)
+
+    def get_rabbitmq_url(self):
+        """Function returns rabbit mq url."""
+        return self.config.get(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_URL)
+
+    def get_rabbitmq_user(self):
+        """Function returns rabbit mq user."""
+        return self.config.get(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_USER)
+
+    def get_rabbitmq_password(self):
+        """Function returns rabbit mq user's password."""
+        return self.config.get(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_PASSWORD)
+
+    def get_rabbitmq_exchange(self):
+        """Function returns rabbit mq exchange."""
+        return self.config.get(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_EXCHANGE)
+
+    def get_minio_url(self):
+        """Function returns minio url."""
+        return self.config.get(MINIO_CONFIG_SECTION, MINIO_CONFIG_URL)
+
+    def get_minio_access_key(self):
+        """Function returns minio access key."""
+        return self.config.get(MINIO_CONFIG_SECTION, MINIO_CONFIG_ACCESS_KEY)
+
+    def get_minio_secret_key(self):
+        """Function returns minio secret key."""
+        return self.config.get(MINIO_CONFIG_SECTION, MINIO_CONFIG_SECRET_KEY)
 
     def __set_config(self):
         self.config = configparser.RawConfigParser()
