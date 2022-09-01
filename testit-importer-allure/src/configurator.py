@@ -11,6 +11,12 @@ CONFIG_PROJECT_ID = 'projectID'
 CONFIG_CONFIGURATION_ID = 'configurationID'
 CONFIG_NAME = 'connection_config.ini'
 
+RABBITMQ_CONFIG_SECTION = 'rabbitmq'
+RABBITMQ_CONFIG_URL = 'host'
+RABBITMQ_CONFIG_USER = 'user'
+RABBITMQ_CONFIG_PASSWORD = 'password'
+RABBITMQ_CONFIG_EXCHANGE = 'exchange'
+
 
 class Configurator:
     """Class representing a configurator"""
@@ -43,6 +49,22 @@ class Configurator:
     def get_configuration_id(self):
         """Function returns configuration id."""
         return self.config.get(CONFIG_SECTION, CONFIG_CONFIGURATION_ID)
+
+    def get_rabbitmq_url(self):
+        """Function returns rabbit mq url."""
+        return self.config.get(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_URL)
+
+    def get_rabbitmq_user(self):
+        """Function returns rabbit mq user."""
+        return self.config.get(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_USER)
+
+    def get_rabbitmq_password(self):
+        """Function returns rabbit mq user's password."""
+        return self.config.get(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_PASSWORD)
+
+    def get_rabbitmq_exchange(self):
+        """Function returns rabbit mq exchange."""
+        return self.config.get(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_EXCHANGE)
 
     def __set_config(self):
         self.config = configparser.RawConfigParser()
