@@ -21,5 +21,10 @@ setup(
     package_data={'testit_importer_allure': ['../connection_config.ini']},
     package_dir={'testit_importer_allure': 'src'},
     install_requires=['testit-api-client>=1.1,<2', 'xmltodict'],
-    entry_points={'console_scripts': ['testit = testit_importer_allure.__main__:console_main']}
+    entry_points={
+        'console_scripts': [
+            'testit = testit_importer_allure.__main__:console_main',
+            'testit-consumer = testit_importer_allure.__main__:consumer_main'
+        ]
+    }
 )

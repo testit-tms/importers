@@ -44,8 +44,9 @@ class Importer:
 
             links = self.__form_links(test['links']) if 'links' in test else []
 
-            if hasattr(test, f'{prefix}status'):
-                outcome = test[f'{prefix}status'].title() if test[f'{prefix}status'] in ('passed', 'skipped') else 'Failed'
+            if f'{prefix}status' in test:
+                outcome = \
+                    test[f'{prefix}status'].title() if test[f'{prefix}status'] in ('passed', 'skipped') else 'Failed'
             else:
                 outcome = 'Blocked'
 

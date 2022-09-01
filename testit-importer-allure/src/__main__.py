@@ -1,3 +1,5 @@
+from .rabbitmq import RabbitMQ
+from .minioreader import MinioReader
 from .parser import Parser
 from .filereader import FileReader
 from .configurator import Configurator
@@ -13,6 +15,22 @@ def console_main():
 
     importer = Importer(parser, api_client, config)
     importer.send_result()
+
+
+def consumer_main():
+    config = Configurator()
+    rabbitmq = RabbitMQ(config.get_rabbitmq_url(), config.get_rabbitmq_user(), config.get_rabbitmq_password(),
+                        config.get_rabbitmq_exchange())
+
+    def callback(ch, method, properties, body):
+        reader = MinioReader(config.get_minio_url(), config.get_minio_access_key(), config.get_minio_secret_key(), body.decode("utf-8") )
+        parser = Parser(reader)
+        api_client = ApiClient(config.get_url(), config.get_private_token())
+
+        importer = Importer(parser, api_client, config)
+        importer.send_result()
+
+    rabbitmq.consume(callback)
 
 
 if __name__ == "__main__":

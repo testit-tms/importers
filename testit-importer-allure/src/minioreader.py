@@ -30,24 +30,17 @@ class MinioReader(implements(Reader)):
 
     def read_file(self, file_name: str):
         """Function reads result file by name."""
-        try:
-            file = self.__client.get_object(self.__bucket, file_name)
-            return FileDto(file_name, io.BytesIO(file.data))
-        finally:
-            file.close()
-            file.release_conn()
+        file = self.__client.get_object(self.__bucket, file_name)
+        return FileDto(file_name, io.BytesIO(file.data))
 
     def read_attachment(self, file_name: str):
         """Function reads attachment by name."""
-        try:
-            file = self.__client.get_object(self.__bucket, file_name)
-            with open(file_name, 'wb') as local_file:
-                local_file.write(file.data)
-            return open(file_name, 'rb')
-        finally:
-            file.close()
-            file.release_conn()
+        file = self.__client.get_object(self.__bucket, file_name)
+        with open(file_name, 'wb') as local_file:
+            local_file.write(file.data)
+        return open(file_name, 'rb')
 
-    def remove_attachment(self, file_name: str):
+    @staticmethod
+    def remove_attachment(file_name: str):
         """Function removes attachment by name."""
         os.remove(file_name)
