@@ -2,6 +2,7 @@
 import io
 import os
 
+import minio.error
 from interface import implements
 from minio import Minio
 
@@ -35,12 +36,14 @@ class MinioReader(implements(Reader)):
 
     def read_attachment(self, file_name: str):
         """Function reads attachment by name."""
-        file = self.__client.get_object(self.__bucket, file_name)
-        with open(file_name, 'wb') as local_file:
-            local_file.write(file.data)
-        return open(file_name, 'rb')
+        try:
+            file = self.__client.get_object(self.__bucket, file_name)
+            with open(file_name, 'wb') as local_file:
+                local_file.write(file.data)
+            return open(file_name, 'rb')
+        except minio.error.S3Error:
+            return None
 
-    @staticmethod
-    def remove_attachment(file_name: str):
+    def remove_attachment(self, file_name: str):
         """Function removes attachment by name."""
         os.remove(file_name)

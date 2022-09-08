@@ -23,7 +23,8 @@ def consumer_main():
                         config.get_rabbitmq_exchange())
 
     def callback(ch, method, properties, body):
-        reader = MinioReader(config.get_minio_url(), config.get_minio_access_key(), config.get_minio_secret_key(), body.decode("utf-8") )
+        reader = MinioReader(config.get_minio_url(), config.get_minio_access_key(), config.get_minio_secret_key(),
+                             body.decode("utf-8"))
         parser = Parser(reader)
         api_client = ApiClient(config.get_url(), config.get_private_token())
 
