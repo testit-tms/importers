@@ -34,6 +34,7 @@ class Configurator:
         self.__set_config()
         self.__set_parser()
         self.__parse_args()
+        self.__load_env_properties()
 
     def get_path(self):
         """Function returns path of result files."""
@@ -149,6 +150,91 @@ class Configurator:
             default=None,
             help='Import the Allure report in the specified directory if it exists'
         )
+        self.parser.add_argument(
+            '-rh',
+            '--rabbitmqhost',
+            action="store",
+            dest="set_rabbitmqhost",
+            metavar="localhost:5672",
+            default=None,
+            help='Host of Rabbit MQ'
+        )
+        self.parser.add_argument(
+            '-ru',
+            '--rabbitmquser',
+            action="store",
+            dest="set_rabbitmquser",
+            metavar="user",
+            default=None,
+            help='User of Rabbit MQ'
+        )
+        self.parser.add_argument(
+            '-rp',
+            '--rabbitmqpassword',
+            action="store",
+            dest="set_rabbitmqpassword",
+            metavar="password",
+            default=None,
+            help='Password of Rabbit MQ'
+        )
+        self.parser.add_argument(
+            '-re',
+            '--rabbitmqexchange',
+            action="store",
+            dest="set_rabbitmqexchange",
+            metavar="exchange",
+            default=None,
+            help='Exchange of Rabbit MQ'
+        )
+        self.parser.add_argument(
+            '-mh',
+            '--miniohost',
+            action="store",
+            dest="set_miniohost",
+            metavar="localhost:9000",
+            default=None,
+            help='Host of Minio'
+        )
+        self.parser.add_argument(
+            '-mak',
+            '--minioaccesskey',
+            action="store",
+            dest="set_minioaccesskey",
+            metavar="accesskey",
+            default=None,
+            help='Access key of Minio'
+        )
+        self.parser.add_argument(
+            '-msk',
+            '--miniosecretkey',
+            action="store",
+            dest="set_miniosecretkey",
+            metavar="secretkey",
+            default=None,
+            help='Secret key of Minio'
+        )
+
+    def __load_env_properties(self):
+        if 'MINIO_API_HOST' in os.environ.keys():
+            self.config.set(MINIO_CONFIG_SECTION, MINIO_CONFIG_URL, os.environ.get('MINIO_API_HOST'))
+
+        if 'MINIO_ACCESS_KEY' in os.environ.keys():
+            self.config.set(MINIO_CONFIG_SECTION, MINIO_CONFIG_ACCESS_KEY, os.environ.get('MINIO_ACCESS_KEY'))
+
+        if 'MINIO_SECRET_KEY' in os.environ.keys():
+            self.config.set(MINIO_CONFIG_SECTION, MINIO_CONFIG_SECRET_KEY, os.environ.get('MINIO_SECRET_KEY'))
+
+        if 'RABBITMQ_HOST' in os.environ.keys():
+            self.config.set(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_URL, os.environ.get('RABBITMQ_HOST'))
+
+        if 'RABBITMQ_USER' in os.environ.keys():
+            self.config.set(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_USER, os.environ.get('RABBITMQ_USER'))
+
+        if 'RABBITMQ_PASSWORD' in os.environ.keys():
+            self.config.set(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_PASSWORD, os.environ.get('RABBITMQ_PASSWORD'))
+
+        if 'RABBITMQ_EXCHANGE' in os.environ.keys():
+            self.config.set(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_EXCHANGE, os.environ.get('RABBITMQ_EXCHANGE'))
 
     def __parse_args(self):
         args = self.parser.parse_args()
@@ -195,12 +281,33 @@ class Configurator:
         if args.alluredir:
             self.path_to_results = args.alluredir
 
+        if args.set_rabbitmqhost:
+            self.config.set(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_URL, args.set_rabbitmqhost)
+
+        if args.set_rabbitmquser:
+            self.config.set(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_USER, args.set_rabbitmquser)
+
+        if args.set_rabbitmqpassword:
+            self.config.set(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_PASSWORD, args.set_rabbitmqpassword)
+
+        if args.set_rabbitmqexchange:
+            self.config.set(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_EXCHANGE, args.set_rabbitmqexchange)
+
+        if args.set_miniohost:
+            self.config.set(MINIO_CONFIG_SECTION, MINIO_CONFIG_URL, args.set_miniohost)
+
+        if args.set_minioaccesskey:
+            self.config.set(MINIO_CONFIG_SECTION, MINIO_CONFIG_ACCESS_KEY, args.set_minioaccesskey)
+
+        if args.set_miniosecretkey:
+            self.config.set(MINIO_CONFIG_SECTION, MINIO_CONFIG_SECRET_KEY, args.set_miniosecretkey)
+
         if args.show_settings:
             print(
-                f'url: {self.config.get(CONFIG_SECTION, CONFIG_URL)}\n'
-                f'privatetoken: {self.config.get(CONFIG_SECTION, CONFIG_PRIVATE_TOKEN)}\n'
-                f'projectID: {self.config.get(CONFIG_SECTION, CONFIG_PROJECT_ID)}\n'
-                f'configurationID: {self.config.get(CONFIG_SECTION, CONFIG_CONFIGURATION_ID)}')
+                f'url: {self.get_url()}\n'
+                f'privatetoken: {self.get_private_token()}\n'
+                f'projectID: {self.get_project_id()}\n'
+                f'configurationID: {self.get_configuration_id()}')
 
         if args.set_url or args.set_privatetoken or args.set_project or args.set_configuration:
             with open(self.path_to_config, "w", encoding='utf-8') as config_file:

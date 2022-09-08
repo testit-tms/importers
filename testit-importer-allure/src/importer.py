@@ -155,7 +155,11 @@ class Importer:
             prefix = '' if 'source' in attachments[0] else '@'
 
             for attachment in attachments:
+
                 file = self.__parser.parse_attachment(f"{attachment[f'{prefix}source']}")
+
+                if file is None:
+                    continue
 
                 attachment_id = self.__api_client.upload_attachment(file)
 
