@@ -55,13 +55,20 @@ class Parser:
 
     def __read_xml(self, file_dto: FileDto):
         testsuite = xmltodict.parse(file_dto.file.read())
+        testcases_data = testsuite['ns2:test-suite']['test-cases']['test-case']
 
-        for testcase in testsuite['ns2:test-suite']['test-cases']['test-case']:
-            if testcase['title'] and testcase['name']:
-                md5 = hashlib.md5()
-                md5.update(testcase['title'].encode('utf-8'))
-                testcase_id = md5.hexdigest()
+        if isinstance(testcases_data, list):
+            for testcase in testcases_data:
+                self.__read_xml_testcase(testcase)
+        else:
+            self.__read_xml_testcase(testcases_data)
 
-                if testcase_id not in self.__data_tests \
-                        or testcase['@start'] > self.__data_tests[testcase_id]['@start']:
-                    self.__data_tests[testcase_id] = testcase
+    def __read_xml_testcase(self, testcase: dict):
+        if testcase['title'] and testcase['name']:
+            md5 = hashlib.md5()
+            md5.update(testcase['title'].encode('utf-8'))
+            testcase_id = md5.hexdigest()
+
+            if testcase_id not in self.__data_tests \
+                    or testcase['@start'] > self.__data_tests[testcase_id]['@start']:
+                self.__data_tests[testcase_id] = testcase
