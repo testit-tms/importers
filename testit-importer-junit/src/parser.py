@@ -1,5 +1,6 @@
 import os
 
+from .status import Status
 from .configurator import Configurator
 from xml.dom import minidom
 
@@ -33,9 +34,13 @@ class Parser:
 
                 if elem.childNodes is not None:
                     for child in elem.childNodes:
-                        if child.nodeName == 'error':
+                        if child.nodeName == 'error' or child.nodeName == 'failure':
                             testcase.set_message(child.attributes['message'].value)
                             testcase.set_trace(child.firstChild.nodeValue)
+                            testcase.set_status(Status.FAILED)
+                        elif child.nodeName == 'skipped':
+                            testcase.set_message(child.attributes['message'].value)
+                            testcase.set_status(Status.FAILED)
 
                 results.append(testcase)
 

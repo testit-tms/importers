@@ -64,16 +64,12 @@ class Importer:
                     )
                 )
 
-            status = "Passed"
-            if result.get_message() is not None:
-                status = "Failed"
-
             self.__api_client.send_test_result(
                 self.__config.get_test_run_id(),
                 JSONFixture.set_results_for_testrun(
                     external_id,
                     self.__config.get_configuration_id(),
-                    status,
+                    result.get_status().value,
                     None,
                     None,
                     None,

@@ -1,11 +1,14 @@
 from datetime import timedelta
 
+from .status import Status
+
 
 class TestCase:
     __name: str = None
     __name_space: str = None
     __class_name: str = None
     __duration: timedelta = None
+    __status: Status = None
     __message: str = None
     __trace: str = None
 
@@ -14,6 +17,7 @@ class TestCase:
         self.__name_space = name_space
         self.__class_name = class_name
         self.__duration = timedelta(seconds=float(duration))
+        self.__status = Status.PASSED
 
     def get_name(self):
         return self.__name
@@ -38,3 +42,9 @@ class TestCase:
 
     def set_trace(self, value: str):
         self.__trace = value
+
+    def get_status(self):
+        return self.__status
+
+    def set_status(self, value: Status):
+        self.__status = value
