@@ -52,8 +52,8 @@ And fill parameters with your configuration, where:
 
 ### Importing
 
-Use the command `testit-junit --resultsdir allure-results` to specify the directory with Junit reports and create new test run in TMS instance.  
-Or use the command `testit-junit --resultsdir allure-results --testrunid <id>` to specify the directory with Junit reports and id of test run in TMS instance.
+Use the command `testit-junit --resultsdir junit-results` to specify the directory with Junit reports and create new test run in TMS instance.  
+Or use the command `testit-junit --resultsdir junit-results --testrunid <id>` to specify the directory with Junit reports and id of test run in TMS instance.
 **Important:** This command initiates the import.
 
 # Contributing
