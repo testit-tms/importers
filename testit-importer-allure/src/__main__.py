@@ -9,6 +9,10 @@ from .apiclient import ApiClient
 
 def console_main():
     config = Configurator()
+
+    if config.get_path() is None:
+        return
+
     reader = FileReader(config.get_path())
     parser = Parser(reader)
     api_client = ApiClient(config.get_url(), config.get_private_token())
