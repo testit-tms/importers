@@ -1,0 +1,6 @@
+xmltodict~=0.13.0
+setuptools==65.3.0
+python-interface~=1.6.1
+testit-api-client>=1.1,<2
+minio~=7.1.11
+pika~=1.3.0
