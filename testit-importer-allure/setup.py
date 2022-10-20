@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='testit-importer-allure',
-    version='1.2.0',
+    version='1.2.1',
     description='Allure report importer for Test IT',
     long_description=open('README.md', "r").read(),
     long_description_content_type="text/markdown",
@@ -20,7 +20,13 @@ setup(
     packages=['testit_importer_allure'],
     package_data={'testit_importer_allure': ['../connection_config.ini']},
     package_dir={'testit_importer_allure': 'src'},
-    install_requires=['testit-api-client>=1.1,<2', 'xmltodict'],
+    install_requires=[
+        'testit-api-client>=1.1,<2',
+        'xmltodict',
+        'python-interface',
+        'minio',
+        'pika'
+    ],
     entry_points={
         'console_scripts': [
             'testit = testit_importer_allure.__main__:console_main',
