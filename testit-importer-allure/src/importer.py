@@ -183,7 +183,7 @@ class Importer:
                 if label[f'{prefix}name'] == 'testcase':
                     work_items_id.append(label[f'{prefix}value'])
                 else:
-                    labels.append({'name': f"{label[f'{prefix}name']}:{label[f'{prefix}value']}"})
+                    labels.append({'name': f"{label[f'{prefix}name']}::{label[f'{prefix}value']}"})
 
                 if label[f'{prefix}name'] == 'package':
                     namespace = label[f'{prefix}value'].split('.')[-1]
