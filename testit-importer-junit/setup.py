@@ -2,13 +2,13 @@ from setuptools import setup
 
 setup(
     name='testit-importer-junit',
-    version='1.0.1',
+    version='1.2.2',
     description='Junit report importer for Test IT',
     long_description=open('README.md', "r").read(),
     long_description_content_type="text/markdown",
     url='https://pypi.org/project/testit-importer-junit/',
-    author='Dmitry Gridnev',
-    author_email='dmitry.gridnev@testit.software',
+    author='Integration team',
+    author_email='integrations@testit.software',
     license='Apache-2.0',
     classifiers=[
         'Programming Language :: Python :: 3',
