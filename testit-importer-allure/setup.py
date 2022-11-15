@@ -2,13 +2,13 @@ from setuptools import setup
 
 setup(
     name='testit-importer-allure',
-    version='1.2.1',
+    version='1.2.2',
     description='Allure report importer for Test IT',
     long_description=open('README.md', "r").read(),
     long_description_content_type="text/markdown",
     url='https://pypi.org/project/testit-importer-allure/',
-    author='Pavel Butuzov',
-    author_email='pavel.butuzov@testit.software',
+    author='Integration team',
+    author_email='integrations@testit.software',
     license='Apache-2.0',
     classifiers=[
         'Programming Language :: Python :: 3',
