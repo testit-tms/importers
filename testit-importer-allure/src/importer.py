@@ -130,7 +130,13 @@ class Importer:
                     labels.append({'name': f"{label[f'{prefix}name']}::{label[f'{prefix}value']}"})
 
                 if label[f'{prefix}name'] == 'package':
-                    namespace = label[f'{prefix}value'].split('.')[-1]
+                    packages = label[f'{prefix}value'].split('.')
+
+                    while packages and not packages[-1]:
+                        del packages[-1]
+
+                    if packages:
+                        namespace = packages[-1]
                 elif label[f'{prefix}name'] == 'parentSuite':
                     namespace = label[f'{prefix}value']
                 elif label[f'{prefix}name'] in ('subSuite', 'suite'):
