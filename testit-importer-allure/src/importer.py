@@ -2,10 +2,10 @@
 import re
 import dataclasses
 from datetime import datetime
-from testit_api_client import JSONFixture
 from .apiclient import ApiClient
 from .configurator import Configurator
 from .parser import Parser
+from .converter import Converter
 
 
 @dataclasses.dataclass
@@ -21,9 +21,6 @@ class Importer:
 
     def send_result(self):
         """Function imports result to TMS."""
-        steps = []
-        results_steps = []
-
         data_tests, data_fixtures = self.__parser.parse_results()
 
         self.__set_test_run()
@@ -33,80 +30,47 @@ class Importer:
             test = data_tests[history_id]
             prefix = '' if 'uuid' in test else '@'
 
-            labels, namespace, class_name, work_items_id = self.__get_data_from_labels(test['labels'])
-            attachments = self.__send_attachments(test['attachments']) if 'attachments' in test else []
-
-            setup, results_setup, teardown, results_teardown = \
-                self.__form_setup_teardown(data_fixtures, test['uuid'] if 'uuid' in test else None)
-
-            if 'steps' in test:
-                steps, results_steps = self.__form_steps(test['steps'])
-
-            links = self.__form_links(test['links']) if 'links' in test else []
+            test['external_id'] = history_id
+            test['labels'], test['namespace'], test['classname'], work_items_id = \
+                self.__get_data_from_labels(test['labels'])
+            test['attachments'] = self.__send_attachments(test['attachments']) if 'attachments' in test else []
+            test['setup'], test['setup_results'], test['teardown'], test['teardown_results'] = \
+                self.__form_setup_teardown(data_fixtures, test.get('uuid', None))
+            test['steps'], test['step_results'] = self.__form_steps(test.get('steps', None))
+            test['links'] = self.__form_links(test['links']) if 'links' in test else []
+            test['traces'] = test['statusDetails'].get('trace') if \
+                'statusDetails' in test and test['statusDetails'] else None
+            test['message'] = test['statusDetails']['message'] if \
+                'statusDetails' in test and test['statusDetails'] and 'message' in test['statusDetails'] else None
+            test['parameters'] = self.__form_parameters(test['parameters']) if 'parameters' in test else None
+            test['duration'] = (int(test[f'{prefix}stop']) - int(test[f'{prefix}start'])) if \
+                f'{prefix}stop' in test else 0
+            test['started_on'] = datetime.fromtimestamp(int(test[f'{prefix}start']) / 1000.0)
+            test['completed_on'] = datetime.fromtimestamp(int(test[f'{prefix}stop']) / 1000.0)
 
             if f'{prefix}status' in test:
-                outcome = \
+                test['outcome'] = \
                     test[f'{prefix}status'].title() if test[f'{prefix}status'] in ('passed', 'skipped') else 'Failed'
             else:
-                outcome = 'Blocked'
+                test['outcome'] = 'Blocked'
 
             autotest = self.__api_client.get_autotest(history_id, self.__project_id)
 
             if not autotest:
                 autotest_id = self.__api_client.create_autotest(
-                    JSONFixture.create_autotest(
-                        history_id,
-                        self.__project_id,
-                        test['name'],
-                        steps,
-                        setup,
-                        teardown,
-                        namespace,
-                        class_name,
-                        None,
-                        test['description'] if 'description' in test else None,
-                        links,
-                        labels
-                    )
+                    Converter.test_result_to_autotest_post_model(test, self.__project_id)
                 )
             else:
                 autotest_id = autotest[0]['id']
 
-                if outcome == 'Passed':
+                if test['outcome'] == 'Passed':
                     self.__api_client.update_autotest(
-                        JSONFixture.update_autotest(
-                            history_id,
-                            self.__project_id,
-                            test['name'],
-                            autotest_id,
-                            steps,
-                            setup,
-                            teardown,
-                            namespace,
-                            class_name,
-                            None,
-                            test['description'] if 'description' in test else None,
-                            links,
-                            labels
-                        )
+                        Converter.test_result_to_autotest_put_model(test, self.__project_id)
                     )
                 else:
+                    autotest[0]['links'] = test['links']
                     self.__api_client.update_autotest(
-                        JSONFixture.update_autotest(
-                            history_id,
-                            self.__project_id,
-                            autotest[0]['name'],
-                            autotest_id,
-                            autotest[0]['steps'],
-                            autotest[0]['setup'],
-                            autotest[0]['teardown'],
-                            autotest[0]['namespace'],
-                            autotest[0]['classname'],
-                            autotest[0]['title'],
-                            autotest[0]['description'],
-                            links,
-                            autotest[0]['labels']
-                        )
+                        Converter.test_result_to_autotest_put_model(autotest[0], self.__project_id)
                     )
 
             for work_item_id in work_items_id:
@@ -114,27 +78,7 @@ class Importer:
 
             self.__api_client.send_test_result(
                 self.__testrun_id,
-                JSONFixture.set_results_for_testrun(
-                    history_id,
-                    self.__configuration_id,
-                    outcome,
-                    results_steps,
-                    results_setup,
-                    results_teardown,
-                    test['statusDetails'].get('trace') if
-                    'statusDetails' in test and test['statusDetails'] else None,
-                    attachments,
-                    self.__form_parameters(test['parameters']) if 'parameters' in data_tests[
-                        history_id] else None,
-                    None,
-                    links,
-                    (int(test[f'{prefix}stop']) - int(
-                        test[f'{prefix}start'])) if f'{prefix}stop' in test else 0,
-                    None,
-                    test['statusDetails']['message'] if
-                    'statusDetails' in test and test[
-                        'statusDetails'] and 'message' in test['statusDetails'] else None
-                )
+                Converter.test_result_to_testrun_result_post_model(test, self.__configuration_id)
             )
 
     def __set_test_run(self):
@@ -164,7 +108,7 @@ class Importer:
                 attachment_id = self.__api_client.upload_attachment(file)
 
                 if attachment_id:
-                    ids.append({'id': attachment_id})
+                    ids.append(attachment_id)
 
                 self.__parser.clean_attachment(f"{attachment[f'{prefix}source']}")
 
@@ -259,11 +203,14 @@ class Importer:
                     results_steps.append(
                         {
                             'title': step['name'],
-                            'stepResults': inner_results_steps,
+                            'step_results': inner_results_steps,
                             'outcome': step[f'{prefix}status'].title() if step[f'{prefix}status'] in (
                                 'passed', 'skipped') else 'Failed',
                             'duration': (int(step[f'{prefix}stop']) - int(
                                 step[f'{prefix}start'])) if f'{prefix}stop' in step else 0,
+                            'started_on': datetime.fromtimestamp(int(step[f'{prefix}start']) / 1000.0),
+                            'completed_on': datetime.fromtimestamp(
+                                int(step[f'{prefix}stop']) / 1000.0) if f'{prefix}stop' in step else None,
                             "attachments": attachments,
                             'parameters': self.__form_parameters(step['parameters']) if 'parameters' in step else None
                         }
