@@ -5,7 +5,8 @@ from testit_api_client.models import (
     LinkPutModel,
     LinkType,
     AutoTestResultsForTestRunModel,
-    AttachmentPutModelAutoTestStepResultsModel)
+    AttachmentPutModelAutoTestStepResultsModel,
+    LabelPostModel)
 
 
 class Converter:
@@ -157,3 +158,7 @@ class Converter:
             started_on=started_on,
             completed_on=completed_on
         )
+
+    @staticmethod
+    def label_to_label_post_model(label: str):
+        return LabelPostModel(label)

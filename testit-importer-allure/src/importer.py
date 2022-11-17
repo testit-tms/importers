@@ -69,6 +69,11 @@ class Importer:
                     )
                 else:
                     autotest[0]['links'] = test['links']
+
+                    for i in range(0, len(autotest[0]['labels'])):
+                        autotest[0]['labels'][i] = \
+                            Converter.label_to_label_post_model(autotest[0]['labels'][i]['name'])
+
                     self.__api_client.update_autotest(
                         Converter.test_result_to_autotest_put_model(autotest[0], self.__project_id)
                     )
@@ -127,7 +132,9 @@ class Importer:
                 if label[f'{prefix}name'] == 'testcase':
                     work_items_id.append(label[f'{prefix}value'])
                 else:
-                    labels.append({'name': f"{label[f'{prefix}name']}::{label[f'{prefix}value']}"})
+                    labels.append(
+                        Converter.label_to_label_post_model(
+                            f"{label[f'{prefix}name']}::{label[f'{prefix}value']}"))
 
                 if label[f'{prefix}name'] == 'package':
                     packages = label[f'{prefix}value'].split('.')
