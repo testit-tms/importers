@@ -23,6 +23,7 @@ class ApiClient:
             header_name='Authorization',
             header_value='PrivateToken ' + token
         )
+        logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.__test_run_api = TestRunsApi(api_client=client)
         self.__autotest_api = AutoTestsApi(api_client=client)
         self.__attachments_api = AttachmentsApi(api_client=client)
@@ -55,7 +56,7 @@ class ApiClient:
     def create_autotest(self, model: Converter.test_result_to_autotest_post_model):
         """Function creates autotest and returns autotest id."""
         response = self.__autotest_api.create_auto_test(auto_test_post_model=model)
-        print(f'Create "{model.name}" passed!')
+        logging.info(f'Create "{model.name}" passed!')
 
         return response['id']
 
@@ -63,7 +64,7 @@ class ApiClient:
         """Function updates autotest"""
         try:
             self.__autotest_api.update_auto_test(auto_test_put_model=model)
-            print(f'Update "{model.name}" passed!')
+            logging.info(f'Update "{model.name}" passed!')
         except Exception as exc:
             logging.error(f'Update "{model.name}" status: {exc.status}\n{exc.body}')
 
@@ -73,7 +74,7 @@ class ApiClient:
             self.__autotest_api.link_auto_test_to_work_item(
                 autotest_id,
                 work_item_id_model=WorkItemIdModel(id=work_item_id))
-            print(f'Link with WI "{work_item_id}" passed!')
+            logging.info(f'Link with WI "{work_item_id}" passed!')
         except Exception as exc:
             logging.error(f'Link with WI "{work_item_id}" status: {exc.status}\n{exc.body}')
 
@@ -83,6 +84,6 @@ class ApiClient:
             self.__test_run_api.set_auto_test_results_for_test_run(
                 id=testrun_id,
                 auto_test_results_for_test_run_model=[model])
-            print("Set result passed!")
+            logging.info("Set result passed!")
         except Exception as exc:
             logging.error(f"Set result status: {exc.status}\n{exc.body}")
