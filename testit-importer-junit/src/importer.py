@@ -1,11 +1,10 @@
 from datetime import datetime
 import hashlib
 
-from testit_api_client import JSONFixture
-
 from .apiclient import ApiClient
 from .configurator import Configurator
 from .parser import Parser
+from .converter import Converter
 
 
 class Importer:
@@ -23,66 +22,30 @@ class Importer:
 
         results = self.__parser.read_file()
         for result in results:
-            external_id = self.__get_external_id(result.get_name_space() + result.get_class_name() + result.get_name())
+            external_id = self.__get_external_id(
+                    result.get_name_space() + result.get_class_name() + result.get_name())
 
             autotest = self.__api_client.get_autotest(external_id, self.__config.get_project_id())
 
             if not autotest:
                 self.__api_client.create_autotest(
-                    JSONFixture.create_autotest(
+                    Converter.test_result_to_autotest_post_model(
+                        result,
                         external_id,
-                        self.__config.get_project_id(),
-                        result.get_name(),
-                        None,
-                        None,
-                        None,
-                        result.get_name_space(),
-                        result.get_class_name(),
-                        None,
-                        None,
-                        None,
-                        None
-                    )
-                )
+                        self.__config.get_project_id()))
             else:
-                autotest_id = autotest[0]['id']
                 self.__api_client.update_autotest(
-                    JSONFixture.update_autotest(
+                    Converter.test_result_to_autotest_put_model(
+                        result,
                         external_id,
-                        self.__config.get_project_id(),
-                        result.get_name(),
-                        autotest_id,
-                        autotest[0]['steps'],
-                        autotest[0]['setup'],
-                        autotest[0]['teardown'],
-                        result.get_name_space(),
-                        result.get_class_name(),
-                        None,
-                        None,
-                        None,
-                        None
-                    )
-                )
+                        self.__config.get_project_id()))
 
             self.__api_client.send_test_result(
                 self.__config.get_test_run_id(),
-                JSONFixture.set_results_for_testrun(
+                Converter.test_result_to_testrun_result_post_model(
+                    result,
                     external_id,
-                    self.__config.get_configuration_id(),
-                    result.get_status().value,
-                    None,
-                    None,
-                    None,
-                    result.get_trace(),
-                    None,
-                    None,
-                    None,
-                    None,
-                    result.get_duration(),
-                    None,
-                    result.get_message()
-                )
-            )
+                    self.__config.get_configuration_id()))
 
     @staticmethod
     def __get_external_id(value: str):
