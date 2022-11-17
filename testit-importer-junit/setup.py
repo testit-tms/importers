@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='testit-importer-junit',
-    version='1.2.2',
+    version='1.2.3',
     description='Junit report importer for Test IT',
     long_description=open('README.md', "r").read(),
     long_description_content_type="text/markdown",
@@ -20,7 +20,7 @@ setup(
     packages=['testit_importer_junit'],
     package_data={'testit_importer_junit': ['../connection_config.ini']},
     package_dir={'testit_importer_junit': 'src'},
-    install_requires=['testit-api-client>=1.1,<2'],
+    install_requires=['testit-api-client>=2,<3'],
     entry_points={
         'console_scripts': [
             'testit-junit = testit_importer_junit.__main__:console_main'
