@@ -215,6 +215,18 @@ class Configurator:
         )
 
     def __load_env_properties(self):
+        if 'TMS_HOST' in os.environ.keys():
+            self.config.set(CONFIG_SECTION, CONFIG_URL, os.environ.get('TMS_HOST'))
+
+        if 'TMS_PRIVATE_TOKEN' in os.environ.keys():
+            self.config.set(CONFIG_SECTION, CONFIG_PRIVATE_TOKEN, os.environ.get('TMS_PRIVATE_TOKEN'))
+
+        if 'TMS_PROJECT_ID' in os.environ.keys():
+            self.config.set(CONFIG_SECTION, CONFIG_PROJECT_ID, os.environ.get('TMS_PROJECT_ID'))
+
+        if 'TMS_CONFIGURATION_ID' in os.environ.keys():
+            self.config.set(CONFIG_SECTION, CONFIG_CONFIGURATION_ID, os.environ.get('TMS_CONFIGURATION_ID'))
+
         if 'MINIO_API_HOST' in os.environ.keys():
             self.config.set(MINIO_CONFIG_SECTION, MINIO_CONFIG_URL, os.environ.get('MINIO_API_HOST'))
 
