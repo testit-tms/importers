@@ -6,7 +6,7 @@ on:
       - v**
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: testit-importer-allure
+  IMAGE_NAME: ${{ github.repository }}/testit-importer-allure
   
 jobs:
   publish-image:
