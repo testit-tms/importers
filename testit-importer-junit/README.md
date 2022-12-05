@@ -40,14 +40,14 @@ And fill parameters with your configuration, where:
 
 1. create a project
 2. open DevTools -> network
-3. go to the project https://{DOMAIN}/projects/20/tests
+3. go to the project https://{DOMAIN}/projects/{PROJECT_GLOBAL_ID}/tests
 4. GET-request project, Preview tab, copy id field  
 
 `configurationid` - id of configuration in TMS instance  
 
 1. create a project  
 2. open DevTools -> network  
-3. go to the project https://{DOMAIN}/projects/20/tests  
+3. go to the project https://{DOMAIN}/projects/{PROJECT_GLOBAL_ID}/tests  
 4. GET-request configurations, Preview tab, copy id field 
 
 ### Importing
