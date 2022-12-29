@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='testit-importer-junit',
-    version='1.2.5',
+    version='1.2.6',
     description='Junit report importer for Test IT',
     long_description=open('README.md', "r").read(),
     long_description_content_type="text/markdown",
