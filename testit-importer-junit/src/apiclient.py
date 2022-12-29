@@ -17,6 +17,7 @@ from .converter import Converter
 
 class ApiClient:
     """Class representing a api client"""
+
     def __init__(self, url: str, token: str):
         client = TmsClient(
             configuration=Configuration(host=url),

@@ -35,12 +35,14 @@ class Parser:
                 if elem.childNodes is not None:
                     for child in elem.childNodes:
                         if child.nodeName == 'error' or child.nodeName == 'failure':
-                            testcase.set_message(child.attributes['message'].value)
+                            if 'message' in child.attributes:
+                                testcase.set_message(child.attributes['message'].value)
                             testcase.set_trace(child.firstChild.nodeValue)
                             testcase.set_status(Status.FAILED)
                         elif child.nodeName == 'skipped':
-                            testcase.set_message(child.attributes['message'].value)
-                            testcase.set_status(Status.FAILED)
+                            if 'message' in child.attributes:
+                                testcase.set_message(child.attributes['message'].value)
+                            testcase.set_status(Status.SKIPPED)
 
                 results.append(testcase)
 
