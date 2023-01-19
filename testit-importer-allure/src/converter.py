@@ -74,13 +74,13 @@ class Converter:
     def link_to_link_post_model(
             url: str,
             title: str,
-            url_type: str,
+            url_type: LinkType,
             description: str):
         if url_type:
             return LinkPostModel(
                 url,
                 title=title,
-                type=LinkType(value=url_type),
+                type=url_type,
                 description=description
             )
         else:
@@ -94,13 +94,13 @@ class Converter:
     def link_to_link_put_model(
             url: str,
             title: str,
-            url_type: str,
+            url_type: LinkType,
             description: str):
         if url_type:
             return LinkPutModel(
                 url,
                 title=title,
-                type=LinkType(value=url_type),
+                type=url_type,
                 description=description
             )
         else:
