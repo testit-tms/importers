@@ -47,6 +47,7 @@ class Importer:
                 f'{prefix}stop' in test else 0
             test['started_on'] = datetime.fromtimestamp(int(test[f'{prefix}start']) / 1000.0)
             test['completed_on'] = datetime.fromtimestamp(int(test[f'{prefix}stop']) / 1000.0)
+            test['description'] = self.__get_description(test.get('description', None))
 
             if f'{prefix}status' in test:
                 test['outcome'] = \
@@ -118,6 +119,15 @@ class Importer:
                 self.__parser.clean_attachment(f"{attachment[f'{prefix}source']}")
 
         return ids
+
+    @staticmethod
+    def __get_description(allure_description):
+        if type(allure_description) == 'str':
+            return allure_description
+        elif type(allure_description) == 'dict':
+            return allure_description.get('#text', None)
+
+        return None
 
     def __get_data_from_labels(self, allure_labels):
         class_name = None
