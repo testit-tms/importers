@@ -248,7 +248,7 @@ class Importer:
             allure_parameters, prefix = self.__parse_xml(allure_parameters, 'parameter', 'value')
 
             for parameter in allure_parameters:
-                parameters[parameter[f'{prefix}name']] = parameter[f'{prefix}value']
+                parameters[parameter[f'{prefix}name']] = str(parameter[f'{prefix}value'])
 
         return parameters
 
