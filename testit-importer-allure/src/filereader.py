@@ -21,7 +21,10 @@ class FileReader(implements(Reader)):
             if self.__path_to_results[-1] != '/':
                 self.__path_to_results += '/'
 
-            return os.listdir(self.__path_to_results)
+            files = [f for f in os.listdir(self.__path_to_results) if
+                     os.path.isfile(os.path.join(self.__path_to_results, f))]
+
+            return files
 
         if os.path.isfile(self.__path_to_results):
             files.append(os.path.basename(self.__path_to_results))
