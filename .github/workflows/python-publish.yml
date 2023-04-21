@@ -20,6 +20,12 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        package: [
+            testit-importer-allure
+        ]
+
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
@@ -33,11 +39,13 @@ jobs:
             VERSION=$(grep "version='" $str/setup.py | grep -o "[0-9]\.[0-9]\.[0-9]"); 
             if [ $VERSION != ${{ github.event.release.tag_name }} ]; then echo "Incorrect package version in $str"; exit 1; fi
           done
-      - name: Install dependencies
+      - name: Install dependencies ${{ matrix.package }}
+        working-directory: ${{ matrix.package }}
         run: |
           python -m pip install --upgrade pip
           pip install build
       - name: Build package
+        working-directory: ${{ matrix.package }}
         run: |
           paths=($(ls | grep 'testit'))
           for str in ${paths[@]}; do
@@ -45,6 +53,7 @@ jobs:
           done
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@release/v1
+        working-directory: ${{ matrix.package }}
         with:
           skip-existing: true
           user: __token__
