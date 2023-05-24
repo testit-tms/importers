@@ -15,7 +15,7 @@ def console_main():
 
     reader = FileReader(config.get_path())
     parser = Parser(reader)
-    api_client = ApiClient(config.get_url(), config.get_private_token())
+    api_client = ApiClient(config.get_url(), config.get_private_token(), config.get_cert_validation())
 
     importer = Importer(parser, api_client, config)
     importer.send_result()
@@ -30,7 +30,7 @@ def consumer_main():
         reader = MinioReader(config.get_minio_url(), config.get_minio_access_key(), config.get_minio_secret_key(),
                              body.decode("utf-8"))
         parser = Parser(reader)
-        api_client = ApiClient(config.get_url(), config.get_private_token())
+        api_client = ApiClient(config.get_url(), config.get_private_token(), config.get_cert_validation())
 
         importer = Importer(parser, api_client, config)
         importer.send_result()

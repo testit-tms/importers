@@ -9,6 +9,7 @@ CONFIG_URL = 'url'
 CONFIG_PRIVATE_TOKEN = 'privateToken'
 CONFIG_PROJECT_ID = 'projectID'
 CONFIG_CONFIGURATION_ID = 'configurationID'
+CONFIG_CERT_VALIDATION = 'certValidation'
 CONFIG_NAME = 'connection_config.ini'
 
 RABBITMQ_CONFIG_SECTION = 'rabbitmq'
@@ -55,6 +56,13 @@ class Configurator:
     def get_configuration_id(self):
         """Function returns configuration id."""
         return self.config.get(CONFIG_SECTION, CONFIG_CONFIGURATION_ID)
+
+    def get_cert_validation(self):
+        """Function returns cert validation."""
+        if not self.config.has_option(CONFIG_SECTION, CONFIG_CERT_VALIDATION):
+            return
+
+        return self.config.get(CONFIG_SECTION, CONFIG_CERT_VALIDATION)
 
     def get_rabbitmq_url(self):
         """Function returns rabbit mq url."""
@@ -133,6 +141,14 @@ class Configurator:
             dest="set_testrun",
             metavar="3802f329-190c-4617-8bb0-2c3696abeb8f",
             help='Set test run ID'
+        )
+        self.parser.add_argument(
+            '-cv',
+            '--certvalidation',
+            action="store",
+            dest="set_cert_validation",
+            metavar="false",
+            help='Enables/disables certificate validation'
         )
         self.parser.add_argument(
             '-sh',
@@ -227,6 +243,9 @@ class Configurator:
         if 'TMS_CONFIGURATION_ID' in os.environ.keys():
             self.config.set(CONFIG_SECTION, CONFIG_CONFIGURATION_ID, os.environ.get('TMS_CONFIGURATION_ID'))
 
+        if f'TMS_CERT_VALIDATION' in os.environ.keys():
+            self.config.set(CONFIG_SECTION, CONFIG_CERT_VALIDATION, os.environ.get('TMS_CERT_VALIDATION').lower())
+
         if 'MINIO_API_HOST' in os.environ.keys():
             self.config.set(MINIO_CONFIG_SECTION, MINIO_CONFIG_URL, os.environ.get('MINIO_API_HOST'))
 
@@ -286,6 +305,9 @@ class Configurator:
                 raise SystemExit
 
             self.specified_testrun = args.set_testrun
+
+        if args.set_cert_validation:
+            self.config.set(CONFIG_SECTION, CONFIG_CERT_VALIDATION, args.set_cert_validation.lower())
 
         if args.alluredir:
             self.path_to_results = args.alluredir

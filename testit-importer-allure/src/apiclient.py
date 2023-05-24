@@ -17,9 +17,14 @@ from .converter import Converter
 
 class ApiClient:
     """Class representing a api client"""
-    def __init__(self, url: str, token: str):
+    def __init__(self, url: str, token: str, cert_validation: str):
+        client_config = Configuration(host=url)
+
+        if cert_validation == 'false':
+            client_config.verify_ssl = False
+
         client = TmsClient(
-            configuration=Configuration(host=url),
+            configuration=client_config,
             header_name='Authorization',
             header_value='PrivateToken ' + token
         )
