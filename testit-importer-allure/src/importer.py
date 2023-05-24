@@ -65,6 +65,8 @@ class Importer:
                 autotest_id = autotest[0]['id']
 
                 if test['outcome'] == 'Passed':
+                    test['is_flaky'] = autotest[0]['is_flaky']
+
                     self.__api_client.update_autotest(
                         Converter.test_result_to_autotest_put_model(test, self.__project_id)
                     )
