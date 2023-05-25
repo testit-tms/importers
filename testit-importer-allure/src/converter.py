@@ -47,7 +47,8 @@ class Converter:
             classname=test_result['classname'],
             description=test_result['description'],
             links=cls.links_to_links_put_model(test_result['links']),
-            labels=test_result['labels']
+            labels=test_result['labels'],
+            is_flaky=test_result['is_flaky']
         )
 
     @classmethod
