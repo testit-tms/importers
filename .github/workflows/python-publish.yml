@@ -53,8 +53,8 @@ jobs:
           done
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@release/v1
-        working-directory: ${{ matrix.package }}
         with:
           skip-existing: true
           user: __token__
+          packages-dir: ${{ matrix.package }}/dist/
           password: ${{ secrets.PYPI_API_TOKEN }}
