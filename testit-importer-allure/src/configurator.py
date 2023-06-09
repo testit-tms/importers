@@ -30,6 +30,7 @@ class Configurator:
     path_to_results = None
     path_to_config = None
     specified_testrun = None
+    specified_testrun_name = None
 
     def __init__(self):
         self.__set_config()
@@ -141,6 +142,13 @@ class Configurator:
             dest="set_testrun",
             metavar="3802f329-190c-4617-8bb0-2c3696abeb8f",
             help='Set test run ID'
+        )
+        self.parser.add_argument(
+            '-tn',
+            '--testrunname',
+            action="store",
+            dest="set_testrun_name",
+            help='Set test run name'
         )
         self.parser.add_argument(
             '-cv',
@@ -305,6 +313,9 @@ class Configurator:
                 raise SystemExit
 
             self.specified_testrun = args.set_testrun
+
+        if args.set_testrun_name:
+            self.specified_testrun_name = args.set_testrun_name
 
         if args.set_cert_validation:
             self.config.set(CONFIG_SECTION, CONFIG_CERT_VALIDATION, args.set_cert_validation.lower())
