@@ -17,6 +17,7 @@ class Importer:
         self.__api_client = api_client
         self.__project_id = config.get_project_id()
         self.__testrun_id = config.specified_testrun
+        self.__testrun_name = config.specified_testrun_name
         self.__configuration_id = config.get_configuration_id()
 
     def send_result(self):
@@ -91,7 +92,10 @@ class Importer:
 
     def __set_test_run(self):
         if self.__testrun_id is None:
-            test_run_name = f'AllureRun {datetime.today().strftime("%d %b %Y %H:%M:%S")}'
+            if self.__testrun_name is not None:
+                test_run_name = f'{self.__testrun_name} {datetime.today().strftime("%d %b %Y %H:%M:%S")}'
+            else:
+                test_run_name = f'AllureRun {datetime.today().strftime("%d %b %Y %H:%M:%S")}'
             self.__testrun_id = self.__api_client.create_test_run(self.__project_id, test_run_name)
 
     def __send_attachments(self, attachments):
