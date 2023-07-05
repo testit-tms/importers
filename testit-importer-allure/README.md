@@ -11,14 +11,6 @@ pip install testit-importer-allure
 ```
 
 ## Usage
-
-### API client
-
-To use importer you need to install `testit-api-client`:
-```
-pip install testit-api-client
-```
-
 ### Configuration
 
 Use the command `testit --help` to view the configuration setup help:
