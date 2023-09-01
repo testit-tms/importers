@@ -81,10 +81,14 @@ class Importer:
                     for i in range(0, len(autotest[0]['labels'])):
                         autotest[0]['labels'][i] = \
                             Converter.label_to_label_post_model(autotest[0]['labels'][i]['name'])
-
-                    self.__api_client.update_autotest(
-                        Converter.test_result_to_autotest_put_model(autotest[0], self.__project_id)
-                    )
+                    if autotest[0]['is_deleted'] is False:
+                        self.__api_client.update_autotest(
+                            Converter.test_result_to_autotest_put_model(autotest[0], self.__project_id)
+                        )
+                    else:
+                        autotest_id = self.__api_client.create_autotest(
+                            Converter.test_result_to_autotest_post_model(test, self.__project_id)
+                        )
 
             for work_item_id in work_items_id:
                 self.__api_client.link_autotest(autotest_id, work_item_id)
