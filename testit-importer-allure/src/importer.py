@@ -67,10 +67,14 @@ class Importer:
 
                 if test['outcome'] == 'Passed':
                     test['is_flaky'] = autotest[0]['is_flaky']
-
-                    self.__api_client.update_autotest(
-                        Converter.test_result_to_autotest_put_model(test, self.__project_id)
-                    )
+                    if autotest[0]['is_deleted'] is False:
+                        self.__api_client.update_autotest(
+                            Converter.test_result_to_autotest_put_model(test, self.__project_id)
+                        )
+                    else:
+                        autotest_id = self.__api_client.create_autotest(
+                            Converter.test_result_to_autotest_post_model(test, self.__project_id)
+                        )
                 else:
                     autotest[0]['links'] = test['links']
 
