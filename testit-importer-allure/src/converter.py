@@ -1,8 +1,10 @@
 from testit_api_client.models import (
-    AutoTestPostModel,
-    AutoTestPutModel,
+    CreateAutoTestRequest,
+    UpdateAutoTestRequest,
     AutoTestStepModel,
     AvailableTestResultOutcome,
+    AutotestsSelectModelFilter,
+    ApiV2AutoTestsSearchPostRequest,
     LinkPostModel,
     LinkPutModel,
     LinkType,
@@ -13,14 +15,23 @@ from testit_api_client.models import (
 
 class Converter:
     @classmethod
-    def test_result_to_autotest_post_model(
+    def project_id_and_external_id_to_auto_tests_search_post_request(cls, project_id: str, external_id: str):
+        autotests_filter = AutotestsSelectModelFilter(
+            project_ids=[project_id],
+            external_ids=[external_id],
+            is_deleted=False)
+
+        return ApiV2AutoTestsSearchPostRequest(filter=autotests_filter)
+
+    @classmethod
+    def test_result_to_create_autotest_request(
             cls,
             test_result: dict,
             project_id: str):
-        return AutoTestPostModel(
-            test_result['external_id'],
-            project_id,
-            test_result['name'],
+        return CreateAutoTestRequest(
+            external_id=test_result['external_id'],
+            project_id=project_id,
+            name=test_result['name'],
             steps=cls.step_results_to_autotest_steps_model(test_result['steps']),
             setup=cls.step_results_to_autotest_steps_model(test_result['setup']),
             teardown=cls.step_results_to_autotest_steps_model(test_result['teardown']),
@@ -32,14 +43,14 @@ class Converter:
         )
 
     @classmethod
-    def test_result_to_autotest_put_model(
+    def test_result_to_update_autotest_request(
             cls,
             test_result: dict,
             project_id: str):
-        return AutoTestPutModel(
-            test_result['external_id'],
-            project_id,
-            test_result['name'],
+        return UpdateAutoTestRequest(
+            external_id=test_result['external_id'],
+            project_id=project_id,
+            name=test_result['name'],
             steps=cls.step_results_to_autotest_steps_model(test_result['steps']),
             setup=cls.step_results_to_autotest_steps_model(test_result['setup']),
             teardown=cls.step_results_to_autotest_steps_model(test_result['teardown']),
@@ -57,9 +68,9 @@ class Converter:
             test_result: dict,
             configuration_id: str):
         return AutoTestResultsForTestRunModel(
-            configuration_id,
-            test_result['external_id'],
-            AvailableTestResultOutcome(test_result['outcome']),
+            configuration_id=configuration_id,
+            auto_test_external_id=test_result['external_id'],
+            outcome=AvailableTestResultOutcome(test_result['outcome']),
             step_results=cls.step_results_to_attachment_put_model_autotest_step_results_model(
                 test_result['step_results']),
             setup_results=cls.step_results_to_attachment_put_model_autotest_step_results_model(

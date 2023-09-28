@@ -56,11 +56,13 @@ class Importer:
             else:
                 test['outcome'] = 'Blocked'
 
-            autotest = self.__api_client.get_autotest(history_id, self.__project_id)
+            autotest = self.__api_client.get_autotest(
+                Converter.project_id_and_external_id_to_auto_tests_search_post_request(self.__project_id, history_id)
+            )
 
             if not autotest:
                 autotest_id = self.__api_client.create_autotest(
-                    Converter.test_result_to_autotest_post_model(test, self.__project_id)
+                    Converter.test_result_to_create_autotest_request(test, self.__project_id)
                 )
             else:
                 autotest_id = autotest[0]['id']
@@ -69,7 +71,7 @@ class Importer:
                     test['is_flaky'] = autotest[0]['is_flaky']
 
                     self.__api_client.update_autotest(
-                        Converter.test_result_to_autotest_put_model(test, self.__project_id)
+                        Converter.test_result_to_update_autotest_request(test, self.__project_id)
                     )
                 else:
                     autotest[0]['links'] = test['links']
@@ -79,7 +81,7 @@ class Importer:
                             Converter.label_to_label_post_model(autotest[0]['labels'][i]['name'])
 
                     self.__api_client.update_autotest(
-                        Converter.test_result_to_autotest_put_model(autotest[0], self.__project_id)
+                        Converter.test_result_to_update_autotest_request(autotest[0], self.__project_id)
                     )
 
             for work_item_id in work_items_id:
