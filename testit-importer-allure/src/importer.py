@@ -198,9 +198,11 @@ class Importer:
                 else:
                     raise Exception('Some links have the wrong URL or no URL!')
 
-                if 'type' in link and link['type'] in (
-                        'Related', 'BlockedBy', 'Defect', 'Issue', 'Requirement', 'Repository'):
-                    links[-1]['type'] = link['type']
+                if 'type' in link:
+                    if link['type'] in ('Related', 'BlockedBy', 'Defect', 'Issue', 'Requirement', 'Repository'):
+                        links[-1]['type'] = link['type']
+                    elif link['type'] == 'issue':
+                        links[-1]['type'] = link['type'].title()
 
                 if 'name' in link:
                     links[-1]['title'] = link['name']
