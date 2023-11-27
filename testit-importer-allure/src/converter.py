@@ -4,6 +4,7 @@ from testit_api_client.models import (
     AutoTestStepModel,
     AvailableTestResultOutcome,
     AutotestsSelectModelFilter,
+    AutotestsSelectModelIncludes,
     ApiV2AutoTestsSearchPostRequest,
     LinkPostModel,
     LinkPutModel,
@@ -20,8 +21,12 @@ class Converter:
             project_ids=[project_id],
             external_ids=[external_id],
             is_deleted=False)
+        autotests_includes = AutotestsSelectModelIncludes(
+            include_steps=False,
+            include_links=False,
+            include_labels=False)
 
-        return ApiV2AutoTestsSearchPostRequest(filter=autotests_filter)
+        return ApiV2AutoTestsSearchPostRequest(filter=autotests_filter, includes=autotests_includes)
 
     @classmethod
     def test_result_to_create_autotest_request(
@@ -100,13 +105,15 @@ class Converter:
                 url,
                 title=title,
                 type=url_type,
-                description=description
+                description=description,
+                has_info=True,
             )
         else:
             return LinkPostModel(
                 url,
                 title=title,
-                description=description
+                description=description,
+                has_info=True,
             )
 
     @staticmethod
@@ -122,13 +129,15 @@ class Converter:
                 url,
                 title=title,
                 type=url_type,
-                description=description
+                description=description,
+                has_info=True,
             )
         else:
             return LinkPutModel(
                 url,
                 title=title,
-                description=description
+                description=description,
+                has_info=True,
             )
 
     @classmethod
