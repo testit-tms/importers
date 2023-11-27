@@ -198,9 +198,9 @@ class Importer:
                 else:
                     raise Exception('Some links have the wrong URL or no URL!')
 
-                if 'type' in link and link['type'] in (
+                if 'type' in link and link['type'].title() in (
                         'Related', 'BlockedBy', 'Defect', 'Issue', 'Requirement', 'Repository'):
-                    links[-1]['type'] = link['type']
+                    links[-1]['type'] = link['type'].title()
 
                 if 'name' in link:
                     links[-1]['title'] = link['name']
@@ -235,8 +235,8 @@ class Importer:
                         {
                             'title': step['name'],
                             'step_results': inner_results_steps,
-                            'outcome': step[f'{prefix}status'].title() if step[f'{prefix}status'] in (
-                                'passed', 'skipped') else 'Failed',
+                            'outcome': step[f'{prefix}status'].title() if f'{prefix}status' in step and step[f'{prefix}status'] in (
+                                    'passed', 'skipped') else 'Failed',
                             'duration': (int(step[f'{prefix}stop']) - int(
                                 step[f'{prefix}start'])) if f'{prefix}stop' in step else 0,
                             'started_on': datetime.fromtimestamp(int(step[f'{prefix}start']) / 1000.0),

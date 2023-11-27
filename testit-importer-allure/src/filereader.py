@@ -1,4 +1,5 @@
 """The module provides functionality for reading result files from file system"""
+import logging
 import os
 from interface import implements
 
@@ -38,7 +39,10 @@ class FileReader(implements(Reader)):
 
     def read_attachment(self, file_name: str):
         """Function reads attachment by name."""
-        return open(f"{self.__path_to_results}{file_name}", 'rb')
+        if os.path.exists(f"{self.__path_to_results}{file_name}"):
+            return open(f"{self.__path_to_results}{file_name}", 'rb')
+
+        logging.error(f"Can't read attachment: {self.__path_to_results}{file_name} does not exist!")
 
     def remove_attachment(self, file_name: str):
         """Function removes attachment by name."""
