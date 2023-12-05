@@ -1,6 +1,11 @@
 # Test IT TMS importers
 ![Test IT](https://raw.githubusercontent.com/testit-tms/importers/main/images/banner.png)
 
+[![Release
+Status](https://img.shields.io/pypi/v/testit-importer-allure?style=plastic)](https://pypi.python.org/pypi/testit-importer-allure)
+[![Downloads](https://img.shields.io/pypi/dm/testit-importer-allure?style=plastic)](https://pypi.python.org/pypi/testit-importer-allure)
+[![GitHub contributors](https://img.shields.io/github/contributors/testit-tms/importers?style=plastic)](https://github.com/testit-tms/importers)
+
 # Allure report
 
 ## Getting Started
