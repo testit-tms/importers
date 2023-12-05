@@ -74,7 +74,7 @@ class Importer:
                         Converter.test_result_to_update_autotest_request(test, self.__project_id)
                     )
                 else:
-                    autotest[0]['links'] = test['links']
+                    autotest[0]['links'] = Converter.links_to_links_put_model(test['links'])
 
                     for i in range(0, len(autotest[0]['labels'])):
                         autotest[0]['labels'][i] = \
