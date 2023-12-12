@@ -31,6 +31,9 @@ class Importer:
             test = data_tests[history_id]
             prefix = '' if 'uuid' in test else '@'
 
+            if 'name' not in test and 'fullName' in test:
+                test['name'] = test['fullName']
+
             test['external_id'] = history_id
             test['labels'], test['namespace'], test['classname'], work_items_id = \
                 self.__get_data_from_labels(test['labels'])
@@ -256,7 +259,7 @@ class Importer:
             allure_parameters, prefix = self.__parse_xml(allure_parameters, 'parameter', 'value')
 
             for parameter in allure_parameters:
-                parameters[parameter[f'{prefix}name']] = str(parameter[f'{prefix}value'])
+                parameters[parameter[f'{prefix}name']] = str(parameter[f'{prefix}value']) if f'{prefix}value' in parameter else ''
 
         return parameters
 
