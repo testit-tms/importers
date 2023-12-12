@@ -47,7 +47,7 @@ class Parser:
         if 'result' in file_dto.name:
             if result_data['historyId'] not in self.__data_tests \
                     or result_data['start'] > self.__data_tests[result_data['historyId']]['start']:
-                self.__data_tests[result_data['historyId']] = result_data
+                self.__data_tests[str(result_data['historyId'])] = result_data
 
         elif 'container' in file_dto.name:
             if 'children' in result_data:
