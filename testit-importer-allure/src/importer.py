@@ -165,11 +165,11 @@ class Importer:
 
                     if packages:
                         namespace = packages[-1]
-                elif label[f'{prefix}name'] == 'parentSuite':
+                elif label[f'{prefix}name'] == 'parentSuite' and label[f'{prefix}value']:
                     namespace = label[f'{prefix}value']
-                elif label[f'{prefix}name'] in ('subSuite', 'suite'):
+                elif label[f'{prefix}name'] in ('subSuite', 'suite') and label[f'{prefix}value']:
                     class_name = label[f'{prefix}value']
-                elif label[f'{prefix}name'] == 'testClass':
+                elif label[f'{prefix}name'] == 'testClass' and label[f'{prefix}value'].split('.')[-1]:
                     class_name = label[f'{prefix}value'].split('.')[-1]
 
         return labels, namespace, class_name, work_items_id
