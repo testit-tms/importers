@@ -45,8 +45,11 @@ class Parser:
         result_data = json.load(file_dto.file)
 
         if 'result' in file_dto.name:
-            if result_data['historyId'] not in self.__data_tests \
-                    or result_data['start'] > self.__data_tests[result_data['historyId']]['start']:
+            if 'historyId' not in result_data:
+                result_data['historyId'] = self.__get_hash(result_data['fullName'])
+
+            if result_data['historyId'] not in self.__data_tests or \
+                    result_data['start'] > self.__data_tests[result_data['historyId']]['start']:
                 self.__data_tests[str(result_data['historyId'])] = result_data
 
         elif 'container' in file_dto.name:
@@ -72,3 +75,8 @@ class Parser:
             if testcase_id not in self.__data_tests \
                     or testcase['@start'] > self.__data_tests[testcase_id]['@start']:
                 self.__data_tests[testcase_id] = testcase
+
+    @staticmethod
+    def __get_hash(value: str):
+        md = hashlib.sha256(bytes(value, encoding='utf-8'))
+        return md.hexdigest()

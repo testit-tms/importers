@@ -34,9 +34,16 @@ class Importer:
             if 'name' not in test and 'fullName' in test:
                 test['name'] = test['fullName']
 
+            if 'labels' in test:
+                test['labels'], test['namespace'], test['classname'], work_items_id = \
+                    self.__get_data_from_labels(test['labels'])
+            else:
+                test['labels'] = []
+                test['namespace'] = None
+                test['classname'] = None
+                work_items_id = []
+
             test['external_id'] = history_id
-            test['labels'], test['namespace'], test['classname'], work_items_id = \
-                self.__get_data_from_labels(test['labels'])
             test['attachments'] = self.__send_attachments(test['attachments']) if 'attachments' in test else []
             test['setup'], test['setup_results'], test['teardown'], test['teardown_results'] = \
                 self.__form_setup_teardown(data_fixtures, test.get('uuid', None))
@@ -242,7 +249,8 @@ class Importer:
                                     'passed', 'skipped') else 'Failed',
                             'duration': (int(step[f'{prefix}stop']) - int(
                                 step[f'{prefix}start'])) if f'{prefix}stop' in step else 0,
-                            'started_on': datetime.fromtimestamp(int(step[f'{prefix}start']) / 1000.0),
+                            'started_on': datetime.fromtimestamp(
+                                int(step[f'{prefix}start']) / 1000.0) if f'{prefix}start' in step else None,
                             'completed_on': datetime.fromtimestamp(
                                 int(step[f'{prefix}stop']) / 1000.0) if f'{prefix}stop' in step else None,
                             "attachments": attachments,
