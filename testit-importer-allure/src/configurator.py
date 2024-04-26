@@ -11,6 +11,7 @@ CONFIG_PROJECT_ID = 'projectID'
 CONFIG_CONFIGURATION_ID = 'configurationID'
 CONFIG_CERT_VALIDATION = 'certValidation'
 CONFIG_NAME = 'connection_config.ini'
+ALLURE_IGNORE_PACKAGE_NAME = 'ignorePackageName'
 
 RABBITMQ_CONFIG_SECTION = 'rabbitmq'
 RABBITMQ_CONFIG_URL = 'host'
@@ -22,6 +23,7 @@ MINIO_CONFIG_SECTION = 'minio'
 MINIO_CONFIG_URL = 'host'
 MINIO_CONFIG_ACCESS_KEY = 'accessKey'
 MINIO_CONFIG_SECRET_KEY = 'secretKey'
+
 
 
 class Configurator:
@@ -64,6 +66,10 @@ class Configurator:
             return
 
         return self.config.get(CONFIG_SECTION, CONFIG_CERT_VALIDATION)
+
+    def get_ignore_package_name(self):
+        """Function returns minio secret key."""
+        return self.config.get(CONFIG_SECTION, ALLURE_IGNORE_PACKAGE_NAME)
 
     def get_rabbitmq_url(self):
         """Function returns rabbit mq url."""
@@ -164,6 +170,15 @@ class Configurator:
             action='store_true',
             dest="show_settings",
             help='Show the connection_config.ini file'
+        )
+        self.parser.add_argument(
+            '-ipn',
+            '--ignorepackagename',
+            action="store",
+            dest="ignore_package_name",
+            metavar="True or False",
+            default=False,
+            help='Use parentSuit as namespace'
         )
         self.parser.add_argument(
             '-rd',
@@ -319,6 +334,8 @@ class Configurator:
 
         if args.set_cert_validation:
             self.config.set(CONFIG_SECTION, CONFIG_CERT_VALIDATION, args.set_cert_validation.lower())
+
+        self.config.set(CONFIG_SECTION, ALLURE_IGNORE_PACKAGE_NAME, args.ignore_package_name)
 
         if args.alluredir:
             self.path_to_results = args.alluredir

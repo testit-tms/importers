@@ -19,6 +19,7 @@ class Importer:
         self.__testrun_id = config.specified_testrun
         self.__testrun_name = config.specified_testrun_name
         self.__configuration_id = config.get_configuration_id()
+        self.__ignore_namespace_name = config.get_ignore_package_name()
 
     def send_result(self):
         """Function imports result to TMS."""
@@ -164,7 +165,7 @@ class Importer:
                         Converter.label_to_label_post_model(
                             f"{label[f'{prefix}name']}::{label[f'{prefix}value']}"))
 
-                if label[f'{prefix}name'] == 'package':
+                if label[f'{prefix}name'] == 'package' and not self.__ignore_namespace_name:
                     packages = label[f'{prefix}value'].split('.')
 
                     while packages and not packages[-1]:
