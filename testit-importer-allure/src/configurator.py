@@ -68,7 +68,7 @@ class Configurator:
         return self.config.get(CONFIG_SECTION, CONFIG_CERT_VALIDATION)
 
     def get_ignore_package_name(self):
-        """Function returns minio secret key."""
+        """Function returns ignore package name."""
         return self.config.get(CONFIG_SECTION, ALLURE_IGNORE_PACKAGE_NAME)
 
     def get_rabbitmq_url(self):
@@ -178,7 +178,7 @@ class Configurator:
             dest="ignore_package_name",
             metavar="True or False",
             default=False,
-            help='Use parentSuit as namespace'
+            help='Use parentSuite as namespace'
         )
         self.parser.add_argument(
             '-rd',
