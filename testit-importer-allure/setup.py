@@ -24,7 +24,7 @@ setup(
     package_data={'testit_importer_allure': ['../connection_config.ini']},
     package_dir={'testit_importer_allure': 'src'},
     install_requires=[
-        'testit-api-client>=4.0.0',
+        'testit-api-client==4.0.0',
         'xmltodict',
         'python-interface',
         'minio',
