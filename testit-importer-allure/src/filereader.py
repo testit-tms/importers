@@ -35,15 +35,23 @@ class FileReader(implements(Reader)):
 
     def read_file(self, file_name: str):
         """Function reads result file by name."""
-        return FileDto(file_name, open(f"{self.__path_to_results}{file_name}", encoding='UTF-8'))
+        return FileDto(file_name, open(self.__get_path(file_name), encoding='UTF-8'))
 
     def read_attachment(self, file_name: str):
         """Function reads attachment by name."""
-        if os.path.exists(f"{self.__path_to_results}{file_name}"):
-            return open(f"{self.__path_to_results}{file_name}", 'rb')
+        path = self.__get_path(file_name)
 
-        logging.error(f"Can't read attachment: {self.__path_to_results}{file_name} does not exist!")
+        if os.path.exists(path):
+            return open(path, 'rb')
+
+        logging.error(f"Can't read attachment: {path} does not exist!")
 
     def remove_attachment(self, file_name: str):
         """Function removes attachment by name."""
         return
+
+    def __get_path(self, path: str):
+        if os.path.abspath(path):
+            return path
+
+        return self.__path_to_results + path

@@ -42,7 +42,12 @@ class Parser:
             self.__read_xml(file)
 
     def __read_json(self, file_dto: FileDto):
-        result_data = json.load(file_dto.file)
+        content = file_dto.file.read()
+
+        if not content:
+            return
+
+        result_data = json.loads(content)
 
         if 'result' in file_dto.name:
             if 'historyId' not in result_data:
