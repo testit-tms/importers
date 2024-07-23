@@ -268,6 +268,9 @@ class Importer:
             allure_parameters, prefix = self.__parse_xml(allure_parameters, 'parameter', 'value')
 
             for parameter in allure_parameters:
+                if parameter is None:
+                    continue
+
                 parameters[parameter[f'{prefix}name']] = str(parameter[f'{prefix}value']) if f'{prefix}value' in parameter else ''
 
         return parameters
