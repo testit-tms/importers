@@ -51,7 +51,4 @@ class FileReader(implements(Reader)):
         return
 
     def __get_path(self, path: str):
-        if os.path.abspath(path):
-            return path
-
         return self.__path_to_results + path
