@@ -51,7 +51,10 @@ class Parser:
 
         if 'result' in file_dto.name:
             if 'historyId' not in result_data:
-                result_data['historyId'] = self.__get_hash(result_data['fullName'])
+                if 'fullName' in result_data:
+                    result_data['historyId'] = self.__get_hash(result_data['fullName'])
+                else:
+                    result_data['historyId'] = self.__get_hash(result_data['uuid'])
 
             if result_data['historyId'] not in self.__data_tests or \
                     result_data['start'] > self.__data_tests[result_data['historyId']]['start']:
