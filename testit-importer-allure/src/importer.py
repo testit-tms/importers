@@ -214,7 +214,7 @@ class Importer:
                     links[-1]['type'] = link['type'].title()
 
                 if 'name' in link:
-                    links[-1]['title'] = link['name']
+                    links[-1]['title'] = str(link['name'])
 
         return links
 

@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='testit-importer-allure',
-    version='1.7.2',
+    version='1.7.3',
     description='Allure report importer for Test IT',
     long_description=open('README.md', "r").read(),
     long_description_content_type="text/markdown",
