@@ -4,8 +4,8 @@ import logging
 from testit_api_client import ApiClient as TmsClient
 from testit_api_client import Configuration
 from testit_api_client.models import (
-    CreateEmptyRequest,
-    LinkAutoTestToWorkItemRequest,
+    TestRunV2PostShortModel,
+    WorkItemIdModel,
     AttachmentPutModel
 )
 from testit_api_client.apis import TestRunsApi
@@ -35,11 +35,11 @@ class ApiClient:
 
     def create_test_run(self, project_id: str, name: str):
         """Function creates test run and returns test run id."""
-        model = CreateEmptyRequest(
+        model = TestRunV2PostShortModel(
             project_id=project_id,
             name=name
         )
-        response = self.__test_run_api.create_empty(create_empty_request=model)
+        response = self.__test_run_api.create_empty(test_run_v2_post_short_model=model)
 
         return response['id']
 
@@ -59,7 +59,7 @@ class ApiClient:
 
     def create_autotest(self, model: Converter.test_result_to_create_autotest_request):
         """Function creates autotest and returns autotest id."""
-        response = self.__autotest_api.create_auto_test(create_auto_test_request=model)
+        response = self.__autotest_api.create_auto_test(auto_test_post_model=model)
         logging.info(f'Create "{model.name}" passed!')
 
         return response['id']
@@ -67,7 +67,7 @@ class ApiClient:
     def update_autotest(self, model: Converter.test_result_to_update_autotest_request):
         """Function updates autotest"""
         try:
-            self.__autotest_api.update_auto_test(update_auto_test_request=model)
+            self.__autotest_api.update_auto_test(auto_test_put_model=model)
             logging.info(f'Update "{model.name}" passed!')
         except Exception as exc:
             logging.error(f'Update "{model.name}" status: {exc}')
@@ -77,7 +77,7 @@ class ApiClient:
         try:
             self.__autotest_api.link_auto_test_to_work_item(
                 autotest_id,
-                link_auto_test_to_work_item_request=LinkAutoTestToWorkItemRequest(id=work_item_id))
+                work_item_id_model=WorkItemIdModel(id=work_item_id))
             logging.info(f'Link with WI "{work_item_id}" passed!')
         except Exception as exc:
             logging.error(f'Link with WI "{work_item_id}" status: {exc}')
