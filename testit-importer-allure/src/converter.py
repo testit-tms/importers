@@ -1,6 +1,6 @@
 from testit_api_client.models import (
-    CreateAutoTestRequest,
-    UpdateAutoTestRequest,
+    AutoTestPostModel,
+    AutoTestPutModel,
     AutoTestStepModel,
     AvailableTestResultOutcome,
     AutotestsSelectModelFilter,
@@ -33,7 +33,7 @@ class Converter:
             cls,
             test_result: dict,
             project_id: str):
-        return CreateAutoTestRequest(
+        return AutoTestPostModel(
             external_id=test_result['external_id'],
             project_id=project_id,
             name=test_result['name'],
@@ -52,7 +52,7 @@ class Converter:
             cls,
             test_result: dict,
             project_id: str):
-        return UpdateAutoTestRequest(
+        return AutoTestPutModel(
             external_id=test_result['external_id'],
             project_id=project_id,
             name=test_result['name'],
