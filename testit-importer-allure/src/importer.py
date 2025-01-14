@@ -68,31 +68,31 @@ class Importer:
                 test['outcome'] = 'Blocked'
 
             autotest = self.__api_client.get_autotest(
-                Converter.project_id_and_external_id_to_auto_tests_search_post_request(self.__project_id, history_id)
+                Converter.project_id_and_external_id_to_autotests_select_model(self.__project_id, history_id)
             )
 
             if not autotest:
                 autotest_id = self.__api_client.create_autotest(
-                    Converter.test_result_to_create_autotest_request(test, self.__project_id)
+                    Converter.test_result_to_autotest_post_model(test, self.__project_id)
                 )
             else:
-                autotest_id = autotest[0]['id']
+                autotest_id = autotest[0].id
 
                 if test['outcome'] == 'Passed':
-                    test['is_flaky'] = autotest[0]['is_flaky']
+                    test['is_flaky'] = autotest[0].is_flaky
 
                     self.__api_client.update_autotest(
-                        Converter.test_result_to_update_autotest_request(test, self.__project_id)
+                        Converter.test_result_to_autotest_put_model(test, self.__project_id)
                     )
                 else:
-                    autotest[0]['links'] = Converter.links_to_links_put_model(test['links'])
+                    autotest[0].links = Converter.links_to_links_put_model(test['links'])
 
-                    for i in range(0, len(autotest[0]['labels'])):
-                        autotest[0]['labels'][i] = \
-                            Converter.label_to_label_post_model(autotest[0]['labels'][i]['name'])
+                    for i in range(0, len(autotest[0].labels)):
+                        autotest[0].labels[i] = \
+                            Converter.label_to_label_post_model(autotest[0].labels[i].name)
 
                     self.__api_client.update_autotest(
-                        Converter.test_result_to_update_autotest_request(autotest[0], self.__project_id)
+                        Converter.auto_test_model_to_update_autotest_put_model(autotest[0], self.__project_id)
                     )
 
             for work_item_id in work_items_id:

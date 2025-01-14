@@ -8,9 +8,7 @@ from testit_api_client.models import (
     WorkItemIdModel,
     AttachmentPutModel
 )
-from testit_api_client.apis import TestRunsApi
-from testit_api_client.apis import AutoTestsApi
-from testit_api_client.apis import AttachmentsApi
+from testit_api_client.api import TestRunsApi, AutoTestsApi, AttachmentsApi
 
 from .converter import Converter
 
@@ -41,30 +39,33 @@ class ApiClient:
         )
         response = self.__test_run_api.create_empty(test_run_v2_post_short_model=model)
 
-        return response['id']
+        return response.id
 
     def upload_attachment(self, file):
-        """Function uploads attachment and returns attachment id."""
-        try:
-            response = self.__attachments_api.api_v2_attachments_post(file=file)
+        with file:
+            try:
+                attachment_response = self.__attachments_api.api_v2_attachments_post(
+                    file=(file.name, file.read()))
 
-            return AttachmentPutModel(response['id'])
-        except Exception as exc:
-            logging.error(f'Load {file.name} status: {exc}')
+                logging.debug(f'Attachment "{file}" was uploaded')
 
-    def get_autotest(self, model: Converter.project_id_and_external_id_to_auto_tests_search_post_request):
+                return AttachmentPutModel(id=attachment_response.id)
+            except Exception as exc:
+                logging.error(f'Upload attachment "{file}" status: {exc}')
+
+    def get_autotest(self, model: Converter.project_id_and_external_id_to_autotests_select_model):
         """Function returns autotest."""
         return self.__autotest_api.api_v2_auto_tests_search_post(
-            api_v2_auto_tests_search_post_request=model)
+            autotests_select_model=model)
 
-    def create_autotest(self, model: Converter.test_result_to_create_autotest_request):
+    def create_autotest(self, model: Converter.test_result_to_autotest_post_model):
         """Function creates autotest and returns autotest id."""
         response = self.__autotest_api.create_auto_test(auto_test_post_model=model)
         logging.info(f'Create "{model.name}" passed!')
 
-        return response['id']
+        return response.id
 
-    def update_autotest(self, model: Converter.test_result_to_update_autotest_request):
+    def update_autotest(self, model: Converter.test_result_to_autotest_put_model):
         """Function updates autotest"""
         try:
             self.__autotest_api.update_auto_test(auto_test_put_model=model)

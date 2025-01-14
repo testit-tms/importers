@@ -1,11 +1,12 @@
 from testit_api_client.models import (
+    AutoTestModel,
     AutoTestPostModel,
     AutoTestPutModel,
     AutoTestStepModel,
     AvailableTestResultOutcome,
-    AutotestsSelectModelFilter,
-    AutotestsSelectModelIncludes,
-    ApiV2AutoTestsSearchPostRequest,
+    AutotestFilterModel,
+    SearchAutoTestsQueryIncludesModel,
+    AutotestsSelectModel,
     LinkPostModel,
     LinkPutModel,
     LinkType,
@@ -16,20 +17,20 @@ from testit_api_client.models import (
 
 class Converter:
     @classmethod
-    def project_id_and_external_id_to_auto_tests_search_post_request(cls, project_id: str, external_id: str):
-        autotests_filter = AutotestsSelectModelFilter(
+    def project_id_and_external_id_to_autotests_select_model(cls, project_id: str, external_id: str):
+        autotests_filter = AutotestFilterModel(
             project_ids=[project_id],
             external_ids=[external_id],
             is_deleted=False)
-        autotests_includes = AutotestsSelectModelIncludes(
+        autotests_includes = SearchAutoTestsQueryIncludesModel(
             include_steps=False,
             include_links=False,
             include_labels=False)
 
-        return ApiV2AutoTestsSearchPostRequest(filter=autotests_filter, includes=autotests_includes)
+        return AutotestsSelectModel(filter=autotests_filter, includes=autotests_includes)
 
     @classmethod
-    def test_result_to_create_autotest_request(
+    def test_result_to_autotest_post_model(
             cls,
             test_result: dict,
             project_id: str):
@@ -48,7 +49,7 @@ class Converter:
         )
 
     @classmethod
-    def test_result_to_update_autotest_request(
+    def test_result_to_autotest_put_model(
             cls,
             test_result: dict,
             project_id: str):
@@ -65,6 +66,26 @@ class Converter:
             links=cls.links_to_links_put_model(test_result['links']),
             labels=test_result['labels'],
             is_flaky=test_result['is_flaky']
+        )
+
+    @classmethod
+    def auto_test_model_to_update_autotest_put_model(
+            cls,
+            auto_test_model: AutoTestModel,
+            project_id: str):
+        return AutoTestPutModel(
+            external_id=auto_test_model.external_id,
+            project_id=project_id,
+            name=auto_test_model.name,
+            steps=auto_test_model.steps,
+            setup=auto_test_model.setup,
+            teardown=auto_test_model.teardown,
+            namespace=auto_test_model.namespace,
+            classname=auto_test_model.classname,
+            description=auto_test_model.description,
+            links=auto_test_model.links,
+            labels=auto_test_model.labels,
+            is_flaky=auto_test_model.is_flaky,
         )
 
     @classmethod
@@ -102,7 +123,7 @@ class Converter:
             if type(url_type) is str:
                 url_type = LinkType(value=url_type)
             return LinkPostModel(
-                url,
+                url=url,
                 title=title,
                 type=url_type,
                 description=description,
@@ -110,7 +131,7 @@ class Converter:
             )
         else:
             return LinkPostModel(
-                url,
+                url=url,
                 title=title,
                 description=description,
                 has_info=True,
@@ -126,7 +147,7 @@ class Converter:
             if type(url_type) is str:
                 url_type = LinkType(value=url_type)
             return LinkPutModel(
-                url,
+                url=url,
                 title=title,
                 type=url_type,
                 description=description,
@@ -134,7 +155,7 @@ class Converter:
             )
         else:
             return LinkPutModel(
-                url,
+                url=url,
                 title=title,
                 description=description,
                 has_info=True,
@@ -232,4 +253,4 @@ class Converter:
 
     @staticmethod
     def label_to_label_post_model(label: str):
-        return LabelPostModel(label)
+        return LabelPostModel(name=label)
