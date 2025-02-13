@@ -21,7 +21,7 @@ class Importer:
         self.__testrun_name = config.specified_testrun_name
         self.__configuration_id = config.get_configuration_id()
         self.__ignore_namespace_name = config.get_ignore_package_name()
-        self.__with_reruns = config.get_with_reruns()
+        self.__include_reruns = config.get_include_reruns()
 
     def send_result(self):
         """Function imports result to TMS."""
@@ -34,7 +34,7 @@ class Importer:
             test_results = sorted(
                 test_results, key=lambda test_result: test_result[('' if 'uuid' in test_result else '@') + 'start'])
 
-            if self.__with_reruns:
+            if self.__include_reruns:
                 self.__send_test_results(test_results, data_fixtures, history_id)
 
                 continue
