@@ -6,6 +6,7 @@ from .apiclient import ApiClient
 from .configurator import Configurator
 from .parser import Parser
 from .converter import Converter
+from .models import Link, LinkType, StepResult, TestResult
 
 
 @dataclasses.dataclass
@@ -20,6 +21,7 @@ class Importer:
         self.__testrun_name = config.specified_testrun_name
         self.__configuration_id = config.get_configuration_id()
         self.__ignore_namespace_name = config.get_ignore_package_name()
+        self.__with_reruns = config.get_with_reruns()
 
     def send_result(self):
         """Function imports result to TMS."""
@@ -28,80 +30,124 @@ class Importer:
         self.__set_test_run()
 
         for history_id in data_tests:
+            test_results = data_tests[history_id]
+            test_results = sorted(
+                test_results, key=lambda test_result: test_result[('' if 'uuid' in test_result else '@') + 'start'])
 
-            test = data_tests[history_id]
-            prefix = '' if 'uuid' in test else '@'
+            if self.__with_reruns:
+                self.__send_test_results(test_results, data_fixtures, history_id)
 
-            if 'name' not in test and 'fullName' in test:
-                test['name'] = test['fullName']
+                continue
 
-            if 'labels' in test:
-                test['labels'], test['namespace'], test['classname'], work_items_id = \
-                    self.__get_data_from_labels(test['labels'])
-            else:
-                test['labels'] = []
-                test['namespace'] = None
-                test['classname'] = None
-                work_items_id = []
+            self.__send_test_results(test_results[-1:], data_fixtures, history_id)
 
-            test['external_id'] = history_id
-            test['attachments'] = self.__send_attachments(test['attachments']) if 'attachments' in test else []
-            test['setup'], test['setup_results'], test['teardown'], test['teardown_results'] = \
-                self.__form_setup_teardown(data_fixtures, test.get('uuid', None))
-            test['steps'], test['step_results'] = self.__form_steps(test.get('steps', None))
-            test['links'] = self.__form_links(test['links']) if 'links' in test else []
-            test['traces'] = test['statusDetails'].get('trace') if \
-                'statusDetails' in test and test['statusDetails'] else None
-            test['message'] = test['statusDetails']['message'] if \
-                'statusDetails' in test and test['statusDetails'] and 'message' in test['statusDetails'] else None
-            test['parameters'] = self.__form_parameters(test['parameters']) if 'parameters' in test else None
-            test['duration'] = (int(test[f'{prefix}stop']) - int(test[f'{prefix}start'])) if \
-                f'{prefix}stop' in test else 0
-            test['started_on'] = datetime.fromtimestamp(int(test[f'{prefix}start']) / 1000.0)
-            test['completed_on'] = datetime.fromtimestamp(int(test[f'{prefix}stop']) / 1000.0)
-            test['description'] = self.__get_description(test.get('description', None))
+    def __send_test_results(self, test_results, data_fixtures, history_id):
+        for test_result in test_results:
+            self.__send_test_result(test_result, data_fixtures, history_id)
 
-            if f'{prefix}status' in test:
-                test['outcome'] = \
-                    test[f'{prefix}status'].title() if test[f'{prefix}status'] in ('passed', 'skipped') else 'Failed'
-            else:
-                test['outcome'] = 'Blocked'
+    def __send_test_result(self, test, data_fixtures, history_id):
+        test_result = self.__form_test_result(test, data_fixtures, history_id)
 
-            autotest = self.__api_client.get_autotest(
-                Converter.project_id_and_external_id_to_autotests_select_model(self.__project_id, history_id)
+        autotest = self.__api_client.get_autotest(
+            Converter.project_id_and_external_id_to_autotests_select_model(
+                self.__project_id,
+                test_result.get_external_id())
+        )
+
+        if not autotest:
+            autotest_id = self.__api_client.create_autotest(
+                Converter.test_result_to_autotest_post_model(test_result, self.__project_id)
             )
+        else:
+            autotest_id = autotest[0].id
 
-            if not autotest:
-                autotest_id = self.__api_client.create_autotest(
-                    Converter.test_result_to_autotest_post_model(test, self.__project_id)
+            if test_result.get_outcome() == 'Passed':
+                test_result.set_is_flaky(autotest[0].is_flaky)
+
+                self.__api_client.update_autotest(
+                    Converter.test_result_to_autotest_put_model(test_result, self.__project_id)
                 )
             else:
-                autotest_id = autotest[0].id
+                autotest[0].links = Converter.links_to_links_put_model(test_result.get_links())
 
-                if test['outcome'] == 'Passed':
-                    test['is_flaky'] = autotest[0].is_flaky
+                for i in range(0, len(autotest[0].labels)):
+                    autotest[0].labels[i] = \
+                        Converter.label_to_label_post_model(autotest[0].labels[i].name)
 
-                    self.__api_client.update_autotest(
-                        Converter.test_result_to_autotest_put_model(test, self.__project_id)
-                    )
-                else:
-                    autotest[0].links = Converter.links_to_links_put_model(test['links'])
+                self.__api_client.update_autotest(
+                    Converter.auto_test_model_to_update_autotest_put_model(autotest[0], self.__project_id)
+                )
 
-                    for i in range(0, len(autotest[0].labels)):
-                        autotest[0].labels[i] = \
-                            Converter.label_to_label_post_model(autotest[0].labels[i].name)
+        for work_item_id in test_result.get_work_item_ids():
+            self.__api_client.link_autotest(autotest_id, work_item_id)
 
-                    self.__api_client.update_autotest(
-                        Converter.auto_test_model_to_update_autotest_put_model(autotest[0], self.__project_id)
-                    )
+        self.__api_client.send_test_result(
+            self.__testrun_id,
+            Converter.test_result_to_testrun_result_post_model(test_result, self.__configuration_id)
+        )
 
-            for work_item_id in work_items_id:
-                self.__api_client.link_autotest(autotest_id, work_item_id)
+    def __form_test_result(self, test, data_fixtures, history_id) -> TestResult:
+        prefix = '' if 'uuid' in test else '@'
+        test_result = TestResult()
 
-            self.__api_client.send_test_result(
-                self.__testrun_id,
-                Converter.test_result_to_testrun_result_post_model(test, self.__configuration_id)
-            )
+        if 'name' not in test and 'fullName' in test:
+            test['name'] = test['fullName']
+
+        step_results = self.__form_steps(test.get('steps', None))
+        started_on = datetime.fromtimestamp(int(test[prefix + 'start']) / 1000.0)
+        completed_on = datetime.fromtimestamp(int(test[prefix + 'stop']) / 1000.0)
+        title = test['name']
+        description = self.__get_description(test.get('description', None))
+        outcome = 'Blocked'
+
+        if prefix + 'status' in test:
+            outcome = test[prefix + 'status'].title() if test[prefix + 'status'] in ('passed', 'skipped') else 'Failed'
+
+        test_result \
+            .set_external_id(history_id) \
+            .set_outcome(outcome) \
+            .set_title(title) \
+            .set_description(description) \
+            .set_step_results(step_results) \
+            .set_started_on(started_on) \
+            .set_completed_on(completed_on)
+
+        if 'labels' in test:
+            self.__set_data_from_labels(test_result, test['labels'])
+
+        if 'attachments' in test:
+            attachment_ids = self.__send_attachments(test['attachments'])
+
+            test_result.set_attachments(attachment_ids)
+
+        self.__form_setup_teardown(test_result, data_fixtures, test.get('uuid', None))
+
+        if 'links' in test:
+            links = self.__form_links(test['links'])
+
+            test_result.set_links(links)
+
+        if 'statusDetails' in test and test['statusDetails']:
+            traces = test['statusDetails'].get('trace')
+
+            test_result.set_traces(traces)
+
+            if 'message' in test['statusDetails']:
+                message = test['statusDetails']['message']
+
+                test_result.set_message(message)
+
+        if 'parameters' in test:
+            parameters = self.__form_parameters(test['parameters'])
+
+            test_result.set_parameters(parameters)
+
+        if prefix + 'stop' in test:
+            duration = (int(test[prefix + 'stop']) - int(test[prefix + 'start']))
+
+            test_result.set_duration(duration)
+
+        return test_result
 
     def __set_test_run(self):
         if self.__testrun_id is None:
@@ -112,7 +158,7 @@ class Importer:
             self.__testrun_id = self.__api_client.create_test_run(self.__project_id, test_run_name)
 
     def __send_attachments(self, attachments):
-        ids = []
+        attachment_ids = []
 
         if attachments:
             if 'attachment' in attachments:
@@ -125,7 +171,7 @@ class Importer:
 
             for attachment in attachments:
 
-                file = self.__parser.parse_attachment(f"{attachment[f'{prefix}source']}")
+                file = self.__parser.parse_attachment(f"{attachment[prefix + 'source']}")
 
                 if file is None:
                     continue
@@ -133,11 +179,11 @@ class Importer:
                 attachment_id = self.__api_client.upload_attachment(file)
 
                 if attachment_id:
-                    ids.append(attachment_id)
+                    attachment_ids.append(attachment_id)
 
-                self.__parser.clean_attachment(f"{attachment[f'{prefix}source']}")
+                self.__parser.clean_attachment(f"{attachment[prefix + 'source']}")
 
-        return ids
+        return attachment_ids
 
     @staticmethod
     def __get_description(allure_description):
@@ -148,39 +194,43 @@ class Importer:
 
         return None
 
-    def __get_data_from_labels(self, allure_labels):
+    def __set_data_from_labels(self, test_result: TestResult, allure_labels):
         class_name = None
         namespace = None
         labels = []
-        work_items_id = []
+        work_item_ids = []
 
         if allure_labels:
             allure_labels, prefix = self.__parse_xml(allure_labels, 'label', 'value')
 
             for label in allure_labels:
-                if label[f'{prefix}name'] == 'testcase':
-                    work_items_id.append(label[f'{prefix}value'])
+                if label[prefix + 'name'] == 'testcase':
+                    work_item_ids.append(label[prefix + 'value'])
                 else:
                     labels.append(
                         Converter.label_to_label_post_model(
-                            f"{label[f'{prefix}name']}::{label[f'{prefix}value']}"))
+                            f"{label[prefix + 'name']}::{label[prefix + 'value']}"))
 
-                if label[f'{prefix}name'] == 'package' and not self.__ignore_namespace_name:
-                    packages = label[f'{prefix}value'].split('.')
+                if label[prefix + 'name'] == 'package' and not self.__ignore_namespace_name:
+                    packages = label[prefix + 'value'].split('.')
 
                     while packages and not packages[-1]:
                         del packages[-1]
 
                     if packages:
                         namespace = packages[-1]
-                elif label[f'{prefix}name'] == 'parentSuite' and label[f'{prefix}value']:
-                    namespace = label[f'{prefix}value']
-                elif label[f'{prefix}name'] in ('subSuite', 'suite') and label[f'{prefix}value']:
-                    class_name = label[f'{prefix}value']
-                elif label[f'{prefix}name'] == 'testClass' and label[f'{prefix}value'].split('.')[-1]:
-                    class_name = label[f'{prefix}value'].split('.')[-1]
+                elif label[prefix + 'name'] == 'parentSuite' and label[prefix + 'value']:
+                    namespace = label[prefix + 'value']
+                elif label[prefix + 'name'] in ('subSuite', 'suite') and label[prefix + 'value']:
+                    class_name = label[prefix + 'value']
+                elif label[prefix + 'name'] == 'testClass' and label[prefix + 'value'].split('.')[-1]:
+                    class_name = label[prefix + 'value'].split('.')[-1]
 
-        return labels, namespace, class_name, work_items_id
+        test_result\
+            .set_labels(labels)\
+            .set_namespace(namespace)\
+            .set_classname(class_name)\
+            .set_work_item_ids(work_item_ids)
 
     @staticmethod
     def __parse_xml(data, key, value):
@@ -199,67 +249,79 @@ class Importer:
         links = []
 
         if allure_links:
-            for link in allure_links:
-                links.append({})
+            for allure_link in allure_links:
+                link = Link()
 
-                if 'url' in link and re.fullmatch(
+                if 'url' in allure_link and re.fullmatch(
                         r'^(?:(?:(?:https?|ftp):)?\/\/)?(?:(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-zA-Z0-9\u00a1-\uffff][a-zA-Z0-9\u00a1-\uffff_-]{0,62})?[a-zA-Z0-9\u00a1-\uffff]\.?)+(?:[a-zA-Z\u00a1-\uffff]{2,}\.?))(?::\d{2,5})?(?:[/?#]\S*)?$',
-                        link['url']):
-                    links[-1]['url'] = link['url']
+                        allure_link['url']):
+                    link.set_url(allure_link['url'])
                 else:
                     raise Exception('Some links have the wrong URL or no URL!')
 
-                if 'type' in link and link['type'].title() in (
-                        'Related', 'BlockedBy', 'Defect', 'Issue', 'Requirement', 'Repository'):
-                    links[-1]['type'] = link['type'].title()
+                if 'type' in allure_link and allure_link['type'].title() in (
+                        LinkType.RELATED,
+                        LinkType.BLOCKED_BY,
+                        LinkType.DEFECT,
+                        LinkType.ISSUE,
+                        LinkType.REQUIREMENT,
+                        LinkType.REPOSITORY):
+                    link.set_link_type(allure_link['type'].title())
 
-                if 'name' in link:
-                    links[-1]['title'] = str(link['name'])
+                if 'name' in allure_link:
+                    link.set_title(str(allure_link['name']))
+
+                links.append(link)
 
         return links
 
     def __form_steps(self, steps):
-        adapt_steps = []
-        results_steps = []
+        step_results = []
 
         if steps:
             steps, prefix = self.__parse_xml(steps, 'step', 'status')
 
             for step in steps:
-                if 'name' in step:
-                    if 'steps' in step:
-                        inner_steps, inner_results_steps = self.__form_steps(step['steps'])
-                    else:
-                        inner_steps = []
-                        inner_results_steps = []
+                if 'name' not in step:
+                    continue
 
-                    adapt_steps.append(
-                        {
-                            'title': step['name'],
-                            'steps': inner_steps
-                        }
-                    )
+                attachment_ids = self.__send_attachments(step['attachments']) if 'attachments' in step else []
+                outcome = step[prefix + 'status'].title() if \
+                    prefix + 'status' in step and step[prefix + 'status'] in ('passed', 'skipped') else 'Failed'
 
-                    attachments = self.__send_attachments(step['attachments']) if 'attachments' in step else []
+                step_result = StepResult()
 
-                    results_steps.append(
-                        {
-                            'title': step['name'],
-                            'step_results': inner_results_steps,
-                            'outcome': step[f'{prefix}status'].title() if f'{prefix}status' in step and step[f'{prefix}status'] in (
-                                    'passed', 'skipped') else 'Failed',
-                            'duration': (int(step[f'{prefix}stop']) - int(
-                                step[f'{prefix}start'])) if f'{prefix}stop' in step else 0,
-                            'started_on': datetime.fromtimestamp(
-                                int(step[f'{prefix}start']) / 1000.0) if f'{prefix}start' in step else None,
-                            'completed_on': datetime.fromtimestamp(
-                                int(step[f'{prefix}stop']) / 1000.0) if f'{prefix}stop' in step else None,
-                            "attachments": attachments,
-                            'parameters': self.__form_parameters(step['parameters']) if 'parameters' in step else None
-                        }
-                    )
+                step_result\
+                    .set_title(step['name'])\
+                    .set_outcome(outcome)\
+                    .set_attachments(attachment_ids)
 
-        return adapt_steps, results_steps
+                if 'steps' in step:
+                    inner_results_step_results = self.__form_steps(step['steps'])
+
+                    step_result.set_step_results(inner_results_step_results)
+
+                if prefix + 'start' in step:
+                    started_on = datetime.fromtimestamp(int(step[prefix + 'start']) / 1000.0)
+
+                    step_result.set_started_on(started_on)
+
+                if prefix + 'stop' in step:
+                    completed_on = datetime.fromtimestamp(int(step[prefix + 'stop']) / 1000.0)
+                    duration = int(step[prefix + 'stop']) - int(step[prefix + 'start'])
+
+                    step_result\
+                        .set_completed_on(completed_on)\
+                        .set_duration(duration)
+
+                if 'parameters' in step:
+                    parameters = self.__form_parameters(step['parameters'])
+
+                    step_result.set_parameters(parameters)
+
+                step_results.append(step_result)
+
+        return step_results
 
     def __form_parameters(self, allure_parameters):
         parameters = {}
@@ -271,26 +333,24 @@ class Importer:
                 if parameter is None:
                     continue
 
-                parameters[parameter[f'{prefix}name']] = str(parameter[f'{prefix}value']) if f'{prefix}value' in parameter else ''
+                parameters[parameter[prefix + 'name']] = str(parameter[prefix + 'value']) if prefix + 'value' in parameter else ''
 
         return parameters
 
-    def __form_setup_teardown(self, data_before_after, test_uuid):
-        setup = []
-        teardown = []
-        results_setup = []
-        results_teardown = []
+    def __form_setup_teardown(self, test_result: TestResult, data_before_after, test_uuid):
+        setup_results = []
+        teardown_results = []
 
         if test_uuid:
             for uuid in data_before_after:
                 if 'children' in data_before_after[uuid]:
                     for child in data_before_after[uuid]['children']:
                         if child == test_uuid:
-                            steps, results_steps = self.__form_steps(data_before_after[uuid].get('befores'))
-                            setup += steps
-                            results_setup += results_steps
-                            steps, results_steps = self.__form_steps(data_before_after[uuid].get('afters'))
-                            teardown += steps
-                            results_teardown += results_steps
+                            step_results = self.__form_steps(data_before_after[uuid].get('befores'))
+                            setup_results += step_results
+                            step_results = self.__form_steps(data_before_after[uuid].get('afters'))
+                            teardown_results += step_results
 
-        return setup, results_setup, teardown, results_teardown
+        test_result\
+            .set_setup_results(setup_results)\
+            .set_teardown_results(teardown_results)
