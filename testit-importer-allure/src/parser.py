@@ -56,9 +56,10 @@ class Parser:
                 else:
                     result_data['historyId'] = self.__get_hash(result_data['uuid'])
 
-            if result_data['historyId'] not in self.__data_tests or \
-                    result_data['start'] > self.__data_tests[result_data['historyId']]['start']:
-                self.__data_tests[str(result_data['historyId'])] = result_data
+            if str(result_data['historyId']) not in self.__data_tests:
+                self.__data_tests[str(result_data['historyId'])] = []
+
+            self.__data_tests[str(result_data['historyId'])].append(result_data)
 
         elif 'container' in file_dto.name:
             if 'children' in result_data:
@@ -80,9 +81,10 @@ class Parser:
             md5.update(testcase['title'].encode('utf-8'))
             testcase_id = md5.hexdigest()
 
-            if testcase_id not in self.__data_tests \
-                    or testcase['@start'] > self.__data_tests[testcase_id]['@start']:
-                self.__data_tests[testcase_id] = testcase
+            if testcase_id not in self.__data_tests:
+                self.__data_tests[testcase_id] = []
+
+            self.__data_tests[testcase_id].append(testcase)
 
     @staticmethod
     def __get_hash(value: str):

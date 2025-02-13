@@ -12,6 +12,7 @@ CONFIG_CONFIGURATION_ID = 'configurationID'
 CONFIG_CERT_VALIDATION = 'certValidation'
 CONFIG_NAME = 'connection_config.ini'
 ALLURE_IGNORE_PACKAGE_NAME = 'ignorePackageName'
+CONFIG_INCLUDE_RERUNS = 'includeReruns'
 
 RABBITMQ_CONFIG_SECTION = 'rabbitmq'
 RABBITMQ_CONFIG_URL = 'host'
@@ -23,7 +24,6 @@ MINIO_CONFIG_SECTION = 'minio'
 MINIO_CONFIG_URL = 'host'
 MINIO_CONFIG_ACCESS_KEY = 'accessKey'
 MINIO_CONFIG_SECRET_KEY = 'secretKey'
-
 
 
 class Configurator:
@@ -70,6 +70,10 @@ class Configurator:
     def get_ignore_package_name(self):
         """Function returns ignore package name."""
         return self.config.get(CONFIG_SECTION, ALLURE_IGNORE_PACKAGE_NAME)
+
+    def get_include_reruns(self):
+        """Function returns include reruns."""
+        return self.config.get(CONFIG_SECTION, CONFIG_INCLUDE_RERUNS)
 
     def get_rabbitmq_url(self):
         """Function returns rabbit mq url."""
@@ -170,6 +174,13 @@ class Configurator:
             action='store_true',
             dest="show_settings",
             help='Show the connection_config.ini file'
+        )
+        self.parser.add_argument(
+            '-ir',
+            '--include-reruns',
+            action='store_true',
+            dest="include_reruns",
+            help='Import the Allure report with all results'
         )
         self.parser.add_argument(
             '-ipn',
@@ -336,6 +347,7 @@ class Configurator:
             self.config.set(CONFIG_SECTION, CONFIG_CERT_VALIDATION, args.set_cert_validation.lower())
 
         self.config.set(CONFIG_SECTION, ALLURE_IGNORE_PACKAGE_NAME, args.ignore_package_name)
+        self.config.set(CONFIG_SECTION, CONFIG_INCLUDE_RERUNS, args.include_reruns)
 
         if args.alluredir:
             self.path_to_results = args.alluredir
