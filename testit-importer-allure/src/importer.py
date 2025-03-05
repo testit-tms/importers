@@ -196,9 +196,15 @@ class Importer:
 
         return None
 
-    def __set_data_from_labels(self, test_result: TestResult, allure_labels):
-        class_name = None
-        namespace = None
+    def __set_data_from_labels(self, test_result: TestResult, allure_labels: list):
+        parent_suite_name = 'parentSuite'
+        suite_name = 'suite'
+        sub_suite_name = 'subSuite'
+        test_class_name = 'testClass'
+        package_name = 'package'
+        main_suites = []
+        sub_suite = None
+        labels_dictionary = {}
         labels = []
         work_item_ids = []
 
@@ -213,25 +219,37 @@ class Importer:
                         Converter.label_to_label_post_model(
                             f"{label[prefix + 'name']}::{label[prefix + 'value']}"))
 
-                if label[prefix + 'name'] == 'package' and not self.__ignore_namespace_name:
-                    packages = label[prefix + 'value'].split('.')
+                    labels_dictionary[label[prefix + 'name']] = label[prefix + 'value']
 
-                    while packages and not packages[-1]:
-                        del packages[-1]
+            if parent_suite_name in labels_dictionary.keys() and labels_dictionary[parent_suite_name]:
+                main_suites.append(labels_dictionary[parent_suite_name])
 
-                    if packages:
-                        namespace = packages[-1]
-                elif label[prefix + 'name'] == 'parentSuite' and label[prefix + 'value']:
-                    namespace = label[prefix + 'value']
-                elif label[prefix + 'name'] in ('subSuite', 'suite') and label[prefix + 'value']:
-                    class_name = label[prefix + 'value']
-                elif label[prefix + 'name'] == 'testClass' and label[prefix + 'value'].split('.')[-1]:
-                    class_name = label[prefix + 'value'].split('.')[-1]
+            if suite_name in labels_dictionary.keys() and labels_dictionary[suite_name]:
+                main_suites.append(labels_dictionary[suite_name])
+
+            if sub_suite_name in labels_dictionary.keys() and labels_dictionary[sub_suite_name]:
+                sub_suite = labels_dictionary[sub_suite_name]
+            elif test_class_name in labels_dictionary.keys() and labels_dictionary[test_class_name]:
+                test_class_str = labels_dictionary[test_class_name]
+                sub_suite = test_class_str.split('.')[-1]
+
+            if not main_suites and not self.__ignore_namespace_name and \
+                    package_name in labels_dictionary.keys() and labels_dictionary[package_name]:
+                packages_str = labels_dictionary[package_name]
+                packages = packages_str.split('.')
+
+                while packages and not packages[-1]:
+                    del packages[-1]
+
+                if packages:
+                    main_suites.append(packages[-1])
+
+        main_suites_str = '.'.join(main_suites)
 
         test_result\
             .set_labels(labels)\
-            .set_namespace(namespace)\
-            .set_classname(class_name)\
+            .set_namespace(main_suites_str)\
+            .set_classname(sub_suite)\
             .set_work_item_ids(work_item_ids)
 
     @staticmethod
