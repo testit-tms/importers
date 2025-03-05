@@ -225,10 +225,10 @@ class Importer:
             .set_classname(sub_suite)\
             .set_work_item_ids(work_item_ids)
 
-    @staticmethod
-    def __get_main_suites(labels_dictionary: dict) -> list:
+    def __get_main_suites(self, labels_dictionary: dict) -> list:
         parent_suite_name = 'parentSuite'
         suite_name = 'suite'
+        package_name = 'package'
         main_suites = []
 
         if parent_suite_name in labels_dictionary.keys() and labels_dictionary[parent_suite_name]:
@@ -378,11 +378,17 @@ class Importer:
             container['befores'] = self.__form_steps(container.get('befores'))
             container['afters'] = self.__form_steps(container.get('afters'))
 
-            for test_uuid in container['children']:
-                if test_uuid not in data_fixtures.keys():
-                    data_fixtures[test_uuid] = []
+            data_fixtures = self.__fill_data_fixtures(data_fixtures, container)
 
-                data_fixtures[test_uuid].append(container)
+        return data_fixtures
+
+    @staticmethod
+    def __fill_data_fixtures(data_fixtures: dict, container: dict) -> dict:
+        for test_uuid in container['children']:
+            if test_uuid not in data_fixtures.keys():
+                data_fixtures[test_uuid] = []
+
+            data_fixtures[test_uuid].append(container)
 
         return data_fixtures
 
