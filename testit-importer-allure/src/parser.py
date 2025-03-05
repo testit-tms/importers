@@ -7,13 +7,14 @@ from .filedto import FileDto
 from .reader import Reader
 
 
+# TODO: implement JSON and XML parsing using models as in migrators
 class Parser:
     """Class representing a parser"""
 
     def __init__(self, reader: Reader):
         self.__reader = reader
         self.__data_tests = {}
-        self.__data_fixtures = {}
+        self.__data_containers = {}
 
     def parse_results(self):
         """Function parses results"""
@@ -22,7 +23,7 @@ class Parser:
         for file in files:
             self.__read(file)
 
-        return self.__data_tests, self.__data_fixtures
+        return self.__data_tests, self.__data_containers
 
     def parse_attachment(self, file_name: str):
         """Function parses attachment"""
@@ -63,7 +64,7 @@ class Parser:
 
         elif 'container' in file_dto.name:
             if 'children' in result_data:
-                self.__data_fixtures[result_data['uuid']] = result_data
+                self.__data_containers[result_data['uuid']] = result_data
 
     def __read_xml(self, file_dto: FileDto):
         testsuite = xmltodict.parse(file_dto.file.read())
