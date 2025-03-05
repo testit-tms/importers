@@ -9,6 +9,7 @@ from .converter import Converter
 from .models import Link, LinkType, StepResult, TestResult
 
 
+# TODO: Refactoring after adding parsing models
 @dataclasses.dataclass
 class Importer:
     """Class representing an importer"""
@@ -25,21 +26,22 @@ class Importer:
 
     def send_result(self):
         """Function imports result to TMS."""
-        data_tests, data_fixtures = self.__parser.parse_results()
+        data_tests, data_containers = self.__parser.parse_results()
+        data_fixtures = self.__form_fixtures(data_containers)
 
         self.__set_test_run()
 
         for history_id in data_tests:
             test_results = data_tests[history_id]
-            test_results = sorted(
+            sorted_test_results_by_start = sorted(
                 test_results, key=lambda test_result: test_result[('' if 'uuid' in test_result else '@') + 'start'])
 
             if self.__include_reruns:
-                self.__send_test_results(test_results, data_fixtures, history_id)
+                self.__send_test_results(sorted_test_results_by_start, data_fixtures, history_id)
 
                 continue
 
-            self.__send_test_results(test_results[-1:], data_fixtures, history_id)
+            self.__send_test_results(sorted_test_results_by_start[-1:], data_fixtures, history_id)
 
     def __send_test_results(self, test_results, data_fixtures, history_id):
         for test_result in test_results:
@@ -120,7 +122,7 @@ class Importer:
 
             test_result.set_attachments(attachment_ids)
 
-        self.__form_setup_teardown(test_result, data_fixtures, test.get('uuid', None))
+        self.__form_setup_teardown(test_result, data_fixtures, test.get('uuid', None), prefix)
 
         if 'links' in test:
             links = self.__form_links(test['links'])
@@ -281,7 +283,9 @@ class Importer:
         if steps:
             steps, prefix = self.__parse_xml(steps, 'step', 'status')
 
-            for step in steps:
+            sorted_steps_by_start = sorted(steps, key=lambda s: s[prefix + 'start'])
+
+            for step in sorted_steps_by_start:
                 if 'name' not in step:
                     continue
 
@@ -337,19 +341,36 @@ class Importer:
 
         return parameters
 
-    def __form_setup_teardown(self, test_result: TestResult, data_before_after, test_uuid):
+    def __form_fixtures(self, data_containers: dict) -> dict:
+        data_fixtures = {}
+
+        for container in data_containers.values():
+            container['befores'] = self.__form_steps(container.get('befores'))
+            container['afters'] = self.__form_steps(container.get('afters'))
+
+            for test_uuid in container['children']:
+                if test_uuid not in data_fixtures.keys():
+                    data_fixtures[test_uuid] = []
+
+                data_fixtures[test_uuid].append(container)
+
+        return data_fixtures
+
+    @staticmethod
+    def __form_setup_teardown(test_result: TestResult, data_fixtures: dict, test_uuid: str, prefix: str):
         setup_results = []
         teardown_results = []
 
-        if test_uuid:
-            for uuid in data_before_after:
-                if 'children' in data_before_after[uuid]:
-                    for child in data_before_after[uuid]['children']:
-                        if child == test_uuid:
-                            step_results = self.__form_steps(data_before_after[uuid].get('befores'))
-                            setup_results += step_results
-                            step_results = self.__form_steps(data_before_after[uuid].get('afters'))
-                            teardown_results += step_results
+        if test_uuid and test_uuid in data_fixtures:
+            fixtures_for_test = data_fixtures[test_uuid]
+            sorted_fixtures_for_test_by_start = sorted(
+                fixtures_for_test, key=lambda f: f[prefix + 'start'])
+
+            for fixture in sorted_fixtures_for_test_by_start:
+                step_results = fixture.get('befores')
+                setup_results += step_results
+                step_results = fixture.get('afters')
+                teardown_results = step_results + teardown_results
 
         test_result\
             .set_setup_results(setup_results)\
