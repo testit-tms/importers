@@ -2,6 +2,7 @@
 import re
 import dataclasses
 from datetime import datetime
+import typing
 from .apiclient import ApiClient
 from .configurator import Configurator
 from .parser import Parser
@@ -197,13 +198,6 @@ class Importer:
         return None
 
     def __set_data_from_labels(self, test_result: TestResult, allure_labels: list):
-        parent_suite_name = 'parentSuite'
-        suite_name = 'suite'
-        sub_suite_name = 'subSuite'
-        test_class_name = 'testClass'
-        package_name = 'package'
-        main_suites = []
-        sub_suite = None
         labels_dictionary = {}
         labels = []
         work_item_ids = []
@@ -221,29 +215,8 @@ class Importer:
 
                     labels_dictionary[label[prefix + 'name']] = label[prefix + 'value']
 
-            if parent_suite_name in labels_dictionary.keys() and labels_dictionary[parent_suite_name]:
-                main_suites.append(labels_dictionary[parent_suite_name])
-
-            if suite_name in labels_dictionary.keys() and labels_dictionary[suite_name]:
-                main_suites.append(labels_dictionary[suite_name])
-
-            if sub_suite_name in labels_dictionary.keys() and labels_dictionary[sub_suite_name]:
-                sub_suite = labels_dictionary[sub_suite_name]
-            elif test_class_name in labels_dictionary.keys() and labels_dictionary[test_class_name]:
-                test_class_str = labels_dictionary[test_class_name]
-                sub_suite = test_class_str.split('.')[-1]
-
-            if not main_suites and not self.__ignore_namespace_name and \
-                    package_name in labels_dictionary.keys() and labels_dictionary[package_name]:
-                packages_str = labels_dictionary[package_name]
-                packages = packages_str.split('.')
-
-                while packages and not packages[-1]:
-                    del packages[-1]
-
-                if packages:
-                    main_suites.append(packages[-1])
-
+        main_suites = self.__get_main_suites(labels_dictionary)
+        sub_suite = self.__get_sub_suite(labels_dictionary)
         main_suites_str = '.'.join(main_suites)
 
         test_result\
@@ -251,6 +224,45 @@ class Importer:
             .set_namespace(main_suites_str)\
             .set_classname(sub_suite)\
             .set_work_item_ids(work_item_ids)
+
+    @staticmethod
+    def __get_main_suites(labels_dictionary: dict) -> list:
+        parent_suite_name = 'parentSuite'
+        suite_name = 'suite'
+        main_suites = []
+
+        if parent_suite_name in labels_dictionary.keys() and labels_dictionary[parent_suite_name]:
+            main_suites.append(labels_dictionary[parent_suite_name])
+
+        if suite_name in labels_dictionary.keys() and labels_dictionary[suite_name]:
+            main_suites.append(labels_dictionary[suite_name])
+
+        if not main_suites and not self.__ignore_namespace_name and \
+                package_name in labels_dictionary.keys() and labels_dictionary[package_name]:
+            packages_str = labels_dictionary[package_name]
+            packages = packages_str.split('.')
+
+            while packages and not packages[-1]:
+                del packages[-1]
+
+            if packages:
+                main_suites.append(packages[-1])
+
+        return main_suites
+
+    @staticmethod
+    def __get_sub_suite(labels_dictionary: dict) -> typing.Optional[str]:
+        sub_suite_name = 'subSuite'
+        test_class_name = 'testClass'
+
+        if sub_suite_name in labels_dictionary.keys() and labels_dictionary[sub_suite_name]:
+            return labels_dictionary[sub_suite_name]
+
+        if test_class_name in labels_dictionary.keys() and labels_dictionary[test_class_name]:
+            test_class_str = labels_dictionary[test_class_name]
+            return test_class_str.split('.')[-1]
+
+        return None
 
     @staticmethod
     def __parse_xml(data, key, value):
