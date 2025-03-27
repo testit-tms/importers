@@ -5,10 +5,10 @@ import typing
 from testit_api_client import ApiClient as TmsClient
 from testit_api_client import Configuration
 from testit_api_client.models import (
-    TestRunV2PostShortModel,
+    CreateEmptyTestRunApiModel,
     WorkItemIdModel,
     AttachmentPutModel,
-    AutotestsSelectModel,
+    AutoTestSearchApiModel,
     AutoTestPostModel,
     AutoTestPutModel,
     AutoTestResultsForTestRunModel,
@@ -37,11 +37,11 @@ class ApiClient:
 
     def create_test_run(self, project_id: str, name: str):
         """Function creates test run and returns test run id."""
-        model = TestRunV2PostShortModel(
+        model = CreateEmptyTestRunApiModel(
             project_id=project_id,
             name=name
         )
-        response = self.__test_run_api.create_empty(test_run_v2_post_short_model=model)
+        response = self.__test_run_api.create_empty(create_empty_test_run_api_model=model)
 
         return response.id
 
@@ -57,10 +57,10 @@ class ApiClient:
             except Exception as exc:
                 logging.error(f'Upload attachment "{file}" status: {exc}')
 
-    def get_autotest(self, model: AutotestsSelectModel):
+    def get_autotest(self, model: AutoTestSearchApiModel):
         """Function returns autotest."""
         return self.__autotest_api.api_v2_auto_tests_search_post(
-            autotests_select_model=model)
+            auto_test_search_api_model=model)
 
     def create_autotest(self, model: AutoTestPostModel):
         """Function creates autotest and returns autotest id."""
