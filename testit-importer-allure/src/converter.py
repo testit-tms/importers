@@ -7,9 +7,9 @@ from testit_api_client.models import (
     AutoTestPutModel,
     AutoTestStepModel,
     AvailableTestResultOutcome,
-    AutotestFilterModel,
-    SearchAutoTestsQueryIncludesModel,
-    AutotestsSelectModel,
+    AutoTestFilterApiModel,
+    AutoTestSearchIncludeApiModel,
+    AutoTestSearchApiModel,
     LinkPostModel,
     LinkPutModel,
     LinkType,
@@ -23,16 +23,16 @@ from .models import Link, StepResult, TestResult
 class Converter:
     @classmethod
     def project_id_and_external_id_to_autotests_select_model(cls, project_id: str, external_id: str):
-        autotests_filter = AutotestFilterModel(
+        autotests_filter = AutoTestFilterApiModel(
             project_ids=[project_id],
             external_ids=[external_id],
             is_deleted=False)
-        autotests_includes = SearchAutoTestsQueryIncludesModel(
+        autotests_includes = AutoTestSearchIncludeApiModel(
             include_steps=False,
             include_links=False,
             include_labels=False)
 
-        return AutotestsSelectModel(filter=autotests_filter, includes=autotests_includes)
+        return AutoTestSearchApiModel(filter=autotests_filter, includes=autotests_includes)
 
     @classmethod
     def test_result_to_autotest_post_model(
@@ -249,7 +249,7 @@ class Converter:
             completed_on: datetime,
             parameters: dict,
             attachments: typing.List[str],
-            step_results: typing.List[StepResult]
+            step_results: typing.List[AttachmentPutModelAutoTestStepResultsModel]
     ):
         return AttachmentPutModelAutoTestStepResultsModel(
             title=title,
