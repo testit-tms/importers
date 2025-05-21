@@ -3,14 +3,13 @@ import io
 import os
 
 import minio.error
-from interface import implements
 from minio import Minio
 
 from .filedto import FileDto
 from .reader import Reader
 
 
-class MinioReader(implements(Reader)):
+class MinioReader(Reader):
     """Class representing a reader"""
 
     def __init__(self, host: str, access_key: str, secret_key: str, bucket: str):

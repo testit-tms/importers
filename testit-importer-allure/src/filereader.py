@@ -1,13 +1,12 @@
 """The module provides functionality for reading result files from file system"""
 import logging
 import os
-from interface import implements
 
 from .filedto import FileDto
 from .reader import Reader
 
 
-class FileReader(implements(Reader)):
+class FileReader(Reader):
     """Class representing a reader"""
 
     def __init__(self, path_to_results: str):
