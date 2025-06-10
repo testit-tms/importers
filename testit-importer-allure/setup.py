@@ -23,7 +23,7 @@ setup(
     package_data={'testit_importer_allure': ['../connection_config.ini']},
     package_dir={'testit_importer_allure': 'src'},
     install_requires=[
-        'testit-api-client==6.1.0',
+        'testit-api-client==6.1.1',
         'xmltodict',
         'minio',
         'pika'
