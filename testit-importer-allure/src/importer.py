@@ -1,4 +1,5 @@
 """The module provides functionality for importing result to TMS"""
+import os
 import re
 import dataclasses
 from datetime import datetime
@@ -24,6 +25,7 @@ class Importer:
         self.__configuration_id = config.get_configuration_id()
         self.__ignore_namespace_name = config.get_ignore_package_name()
         self.__include_reruns = config.get_include_reruns()
+        self.__path_to_results = config.get_path()
 
     def send_result(self):
         """Function imports result to TMS."""
@@ -173,13 +175,9 @@ class Importer:
             prefix = '' if 'source' in attachments[0] else '@'
 
             for attachment in attachments:
+                path = os.path.join(self.__path_to_results, f"{attachment[prefix + 'source']}")
 
-                file = self.__parser.parse_attachment(f"{attachment[prefix + 'source']}")
-
-                if file is None:
-                    continue
-
-                attachment_id = self.__api_client.upload_attachment(file)
+                attachment_id = self.__api_client.upload_attachment(path)
 
                 if attachment_id:
                     attachment_ids.append(attachment_id)

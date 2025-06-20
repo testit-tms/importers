@@ -46,16 +46,15 @@ class ApiClient:
         return response.id
 
     def upload_attachment(self, file):
-        with file:
-            try:
-                attachment_response = self.__attachments_api.api_v2_attachments_post(
-                    file=(file.name, file.read()))
+        try:
+            attachment_response = self.__attachments_api.api_v2_attachments_post(
+                file=file)
 
-                logging.debug(f'Attachment "{file}" was uploaded')
+            logging.debug(f'Attachment "{file}" was uploaded')
 
-                return AttachmentPutModel(id=attachment_response.id)
-            except Exception as exc:
-                logging.error(f'Upload attachment "{file}" status: {exc}')
+            return AttachmentPutModel(id=attachment_response.id)
+        except Exception as exc:
+            logging.error(f'Upload attachment "{file}" status: {exc}')
 
     def get_autotest(self, model: AutoTestSearchApiModel):
         """Function returns autotest."""
