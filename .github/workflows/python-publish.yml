@@ -35,9 +35,9 @@ jobs:
       - name: Check version
         run: |
           paths=($(ls | grep 'testit'))
-          for str in ${paths[@]}; do
-            VERSION=$(grep "version='" $str/setup.py | grep -o -E "[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}");
-            if [ $VERSION != ${{ github.event.release.tag_name }} ]; then echo "Incorrect package version in $str"; exit 1; fi
+          for str in ${paths[@]}; do        
+            VERSION=$(grep -oP 'VERSION\s*=\s*"\K[^"]+' $str/setup.py)
+            python .version_check/check.py $VERSION
           done
       - name: Install dependencies ${{ matrix.package }}
         working-directory: ${{ matrix.package }}
