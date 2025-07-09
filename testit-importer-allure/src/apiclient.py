@@ -14,6 +14,7 @@ from testit_api_client.models import (
     AutoTestResultsForTestRunModel,
 )
 from testit_api_client.api import TestRunsApi, AutoTestsApi, AttachmentsApi
+from .html_escape_utils import HtmlEscapeUtils
 
 
 # TODO: Use bulk-methods after refactoring the importer.py
@@ -41,6 +42,7 @@ class ApiClient:
             project_id=project_id,
             name=name
         )
+        model = HtmlEscapeUtils.escape_html_in_object(model)
         response = self.__test_run_api.create_empty(create_empty_test_run_api_model=model)
 
         return response.id
@@ -63,6 +65,7 @@ class ApiClient:
 
     def create_autotest(self, model: AutoTestPostModel):
         """Function creates autotest and returns autotest id."""
+        model = HtmlEscapeUtils.escape_html_in_object(model)
         response = self.__autotest_api.create_auto_test(auto_test_post_model=model)
         logging.info(f'Create "{model.name}" passed!')
 
@@ -70,6 +73,7 @@ class ApiClient:
 
     def create_autotests(self, models: typing.List[AutoTestPostModel]):
         """Function creates autotests"""
+        models = HtmlEscapeUtils.escape_html_in_object(models)
         logging.debug(f'Creating autotests: "{models}')
 
         self.__autotest_api.create_multiple(auto_test_post_model=models)
@@ -79,6 +83,7 @@ class ApiClient:
     def update_autotest(self, model: AutoTestPutModel):
         """Function updates autotest"""
         try:
+            model = HtmlEscapeUtils.escape_html_in_object(model)
             self.__autotest_api.update_auto_test(auto_test_put_model=model)
             logging.info(f'Update "{model.name}" passed!')
         except Exception as exc:
@@ -87,6 +92,7 @@ class ApiClient:
     def update_autotests(self, models: typing.List[AutoTestPutModel]):
         """Function updates autotests"""
         try:
+            models = HtmlEscapeUtils.escape_html_in_object(models)
             logging.debug(f'Updating autotests: {models}')
 
             self.__autotest_api.update_multiple(auto_test_put_model=models)
@@ -108,6 +114,7 @@ class ApiClient:
     def send_test_result(self, testrun_id: str, model: AutoTestResultsForTestRunModel):
         """Function sends autotest result to test run"""
         try:
+            model = HtmlEscapeUtils.escape_html_in_object(model)
             self.__test_run_api.set_auto_test_results_for_test_run(
                 id=testrun_id,
                 auto_test_results_for_test_run_model=[model])
@@ -118,6 +125,7 @@ class ApiClient:
     def __send_test_results(self, testrun_id: str, test_results: typing.List[AutoTestResultsForTestRunModel]):
         """Function sends autotest results to test run"""
         try:
+            test_results = HtmlEscapeUtils.escape_html_in_object(test_results)
             self.__test_run_api.set_auto_test_results_for_test_run(
                 id=testrun_id,
                 auto_test_results_for_test_run_model=test_results)
