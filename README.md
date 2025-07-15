@@ -12,7 +12,7 @@ The repository contains new versions of importers.
 | 4.6     | 1.6            |
 | 5.0     | 1.7            |
 | 5.2     | 1.8            |
-| 5.3     | 1.12.5.post530 |
+| 5.3     | 1.12.6.post530 |
 | 5.4     | 1.12.5.post540 |
 | Cloud   | 1.12           |
 
