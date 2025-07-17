@@ -13,7 +13,7 @@ The repository contains new versions of importers.
 | 5.0     | 1.7            |
 | 5.2     | 1.8            |
 | 5.3     | 1.12.6.post530 |
-| 5.4     | 1.12.5.post540 |
+| 5.4     | 1.12.6.post540 |
 | Cloud   | 1.12           |
 
  1. [Allure Importer](https://github.com/testit-tms/importers/tree/main/testit-importer-allure)
