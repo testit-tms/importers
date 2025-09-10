@@ -54,14 +54,14 @@ class Importer:
         test_result = self.__form_test_result(test, data_fixtures, history_id)
 
         autotest = self.__api_client.get_autotest(
-            Converter.project_id_and_external_id_to_autotests_select_model(
+            Converter.build_autotests_search_post_request(
                 self.__project_id,
                 test_result.get_external_id())
         )
 
         if not autotest:
             autotest_id = self.__api_client.create_autotest(
-                Converter.test_result_to_autotest_post_model(test_result, self.__project_id)
+                Converter.test_result_to_create_autotest_request(test_result, self.__project_id)
             )
         else:
             autotest_id = autotest[0].id
@@ -70,7 +70,7 @@ class Importer:
                 test_result.set_is_flaky(autotest[0].is_flaky)
 
                 self.__api_client.update_autotest(
-                    Converter.test_result_to_autotest_put_model(test_result, self.__project_id)
+                    Converter.test_result_to_update_autotest_request(test_result, self.__project_id)
                 )
             else:
                 autotest[0].links = Converter.links_to_links_put_model(test_result.get_links())
@@ -80,7 +80,7 @@ class Importer:
                         Converter.label_to_label_post_model(autotest[0].labels[i].name)
 
                 self.__api_client.update_autotest(
-                    Converter.auto_test_model_to_update_autotest_put_model(autotest[0], self.__project_id)
+                    Converter.auto_test_model_to_update_autotest_request(autotest[0], self.__project_id)
                 )
 
         for work_item_id in test_result.get_work_item_ids():
