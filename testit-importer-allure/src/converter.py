@@ -4,12 +4,14 @@ from datetime import datetime
 from testit_api_client.models import (
     AutoTestModel,
     AutoTestPostModel,
+    CreateAutoTestRequest,
     AutoTestPutModel,
+    UpdateAutoTestRequest,
     AutoTestStepModel,
     AvailableTestResultOutcome,
-    AutoTestFilterApiModel,
-    AutoTestSearchIncludeApiModel,
-    AutoTestSearchApiModel,
+    AutoTestSearchApiModelFilter,
+    AutoTestSearchApiModelIncludes,
+    ApiV2AutoTestsSearchPostRequest,
     LinkPostModel,
     LinkPutModel,
     LinkType,
@@ -22,24 +24,49 @@ from .models import Link, StepResult, TestResult
 
 class Converter:
     @classmethod
-    def project_id_and_external_id_to_autotests_select_model(cls, project_id: str, external_id: str):
-        autotests_filter = AutoTestFilterApiModel(
+    def build_autotests_search_post_request(
+            cls,
+            project_id: str,
+            external_id: str
+    ) -> ApiV2AutoTestsSearchPostRequest:
+        autotests_filter = AutoTestSearchApiModelFilter(
             project_ids=[project_id],
             external_ids=[external_id],
             is_deleted=False)
-        autotests_includes = AutoTestSearchIncludeApiModel(
+        autotests_includes = AutoTestSearchApiModelIncludes(
             include_steps=False,
             include_links=False,
             include_labels=False)
 
-        return AutoTestSearchApiModel(filter=autotests_filter, includes=autotests_includes)
+        return ApiV2AutoTestsSearchPostRequest(filter=autotests_filter, includes=autotests_includes)
 
     @classmethod
     def test_result_to_autotest_post_model(
             cls,
             test_result: TestResult,
-            project_id: str):
+            project_id: str
+    ) -> AutoTestPostModel:
         return AutoTestPostModel(
+            external_id=test_result.get_external_id(),
+            project_id=project_id,
+            name=test_result.get_title(),
+            steps=cls.step_results_to_autotest_steps_model(test_result.get_step_results()),
+            setup=cls.step_results_to_autotest_steps_model(test_result.get_setup_results()),
+            teardown=cls.step_results_to_autotest_steps_model(test_result.get_teardown_results()),
+            namespace=test_result.get_namespace(),
+            classname=test_result.get_classname(),
+            description=test_result.get_description(),
+            links=cls.links_to_links_post_model(test_result.get_links()),
+            labels=test_result.get_labels()
+        )
+
+    @classmethod
+    def test_result_to_create_autotest_request(
+            cls,
+            test_result: TestResult,
+            project_id: str
+    ) -> CreateAutoTestRequest:
+        return CreateAutoTestRequest(
             external_id=test_result.get_external_id(),
             project_id=project_id,
             name=test_result.get_title(),
@@ -57,8 +84,30 @@ class Converter:
     def test_result_to_autotest_put_model(
             cls,
             test_result: TestResult,
-            project_id: str):
+            project_id: str
+    ) -> AutoTestPutModel:
         return AutoTestPutModel(
+            external_id=test_result.get_external_id(),
+            project_id=project_id,
+            name=test_result.get_title(),
+            steps=cls.step_results_to_autotest_steps_model(test_result.get_step_results()),
+            setup=cls.step_results_to_autotest_steps_model(test_result.get_setup_results()),
+            teardown=cls.step_results_to_autotest_steps_model(test_result.get_teardown_results()),
+            namespace=test_result.get_namespace(),
+            classname=test_result.get_classname(),
+            description=test_result.get_description(),
+            links=cls.links_to_links_put_model(test_result.get_links()),
+            labels=test_result.get_labels(),
+            is_flaky=test_result.get_is_flaky(),
+        )
+
+    @classmethod
+    def test_result_to_update_autotest_request(
+            cls,
+            test_result: TestResult,
+            project_id: str
+    ) -> UpdateAutoTestRequest:
+        return UpdateAutoTestRequest(
             external_id=test_result.get_external_id(),
             project_id=project_id,
             name=test_result.get_title(),
@@ -77,8 +126,30 @@ class Converter:
     def auto_test_model_to_update_autotest_put_model(
             cls,
             auto_test_model: AutoTestModel,
-            project_id: str):
+            project_id: str
+    ) -> AutoTestPutModel:
         return AutoTestPutModel(
+            external_id=auto_test_model.external_id,
+            project_id=project_id,
+            name=auto_test_model.name,
+            steps=auto_test_model.steps,
+            setup=auto_test_model.setup,
+            teardown=auto_test_model.teardown,
+            namespace=auto_test_model.namespace,
+            classname=auto_test_model.classname,
+            description=auto_test_model.description,
+            links=auto_test_model.links,
+            labels=auto_test_model.labels,
+            is_flaky=auto_test_model.is_flaky,
+        )
+
+    @classmethod
+    def auto_test_model_to_update_autotest_request(
+            cls,
+            auto_test_model: AutoTestModel,
+            project_id: str
+    ) -> UpdateAutoTestRequest:
+        return UpdateAutoTestRequest(
             external_id=auto_test_model.external_id,
             project_id=project_id,
             name=auto_test_model.name,
@@ -97,7 +168,8 @@ class Converter:
     def test_result_to_testrun_result_post_model(
             cls,
             test_result: TestResult,
-            configuration_id: str):
+            configuration_id: str
+    ) -> AutoTestResultsForTestRunModel:
         return AutoTestResultsForTestRunModel(
             configuration_id=configuration_id,
             auto_test_external_id=test_result.get_external_id(),
@@ -123,7 +195,8 @@ class Converter:
             url: str,
             title: str,
             url_type,
-            description: str):
+            description: str
+    ) -> LinkPostModel:
         if url_type:
             if type(url_type) is str:
                 url_type = LinkType(value=url_type)
@@ -147,7 +220,8 @@ class Converter:
             url: str,
             title: str,
             url_type,
-            description: str):
+            description: str
+    ) -> LinkPutModel:
         if url_type:
             if type(url_type) is str:
                 url_type = LinkType(value=url_type)
@@ -167,7 +241,7 @@ class Converter:
             )
 
     @classmethod
-    def links_to_links_post_model(cls, links: typing.List[Link]):
+    def links_to_links_post_model(cls, links: typing.List[Link]) -> typing.List[LinkPostModel]:
         post_model_links = []
 
         for link in links:
@@ -181,7 +255,7 @@ class Converter:
         return post_model_links
 
     @classmethod
-    def links_to_links_put_model(cls, links: typing.List[Link]):
+    def links_to_links_put_model(cls, links: typing.List[Link]) -> typing.List[LinkPutModel]:
         put_model_links = []
 
         for link in links:
@@ -195,7 +269,7 @@ class Converter:
         return put_model_links
 
     @classmethod
-    def step_results_to_autotest_steps_model(cls, steps: typing.List[StepResult]):
+    def step_results_to_autotest_steps_model(cls, steps: typing.List[StepResult]) -> typing.List[AutoTestStepModel]:
         autotest_model_steps = []
 
         for step in steps:
@@ -213,13 +287,17 @@ class Converter:
     @staticmethod
     def step_result_to_autotest_step_model(
             title: str,
-            steps: list = None):
+            steps: list = None
+    ) -> AutoTestStepModel:
         return AutoTestStepModel(
             title=title,
             steps=steps)
 
     @classmethod
-    def step_results_to_attachment_put_model_autotest_step_results_model(cls, steps: typing.List[StepResult]):
+    def step_results_to_attachment_put_model_autotest_step_results_model(
+            cls,
+            steps: typing.List[StepResult]
+    ) -> typing.List[AttachmentPutModelAutoTestStepResultsModel]:
         autotest_model_step_results = []
 
         for step in steps:
@@ -250,7 +328,7 @@ class Converter:
             parameters: dict,
             attachments: typing.List[str],
             step_results: typing.List[AttachmentPutModelAutoTestStepResultsModel]
-    ):
+    ) -> AttachmentPutModelAutoTestStepResultsModel:
         return AttachmentPutModelAutoTestStepResultsModel(
             title=title,
             outcome=AvailableTestResultOutcome(outcome),
@@ -263,5 +341,5 @@ class Converter:
         )
 
     @staticmethod
-    def label_to_label_post_model(label: str):
+    def label_to_label_post_model(label: str) -> LabelPostModel:
         return LabelPostModel(name=label)
