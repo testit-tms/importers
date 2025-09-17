@@ -4,6 +4,9 @@ import re
 import dataclasses
 from datetime import datetime
 import typing
+
+from testit_api_client.model.auto_test_api_result import AutoTestApiResult
+
 from .apiclient import ApiClient
 from .configurator import Configurator
 from .parser import Parser
@@ -53,7 +56,7 @@ class Importer:
     def __send_test_result(self, test, data_fixtures, history_id):
         test_result = self.__form_test_result(test, data_fixtures, history_id)
 
-        autotest = self.__api_client.get_autotest(
+        autotest: AutoTestApiResult = self.__api_client.get_autotest(
             Converter.build_autotests_search_post_request(
                 self.__project_id,
                 test_result.get_external_id())

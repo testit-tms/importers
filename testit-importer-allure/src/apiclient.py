@@ -5,12 +5,12 @@ import typing
 
 from testit_api_client import ApiClient as TmsClient
 from testit_api_client import Configuration
+from testit_api_client.model.auto_test_api_result import AutoTestApiResult
 from testit_api_client.models import (
     CreateEmptyRequest,
     LinkAutoTestToWorkItemRequest,
     AttachmentPutModel,
     ApiV2AutoTestsSearchPostRequest,
-    AutoTestApiResult,
     AutoTestPostModel,
     CreateAutoTestRequest,
     AutoTestPutModel,
