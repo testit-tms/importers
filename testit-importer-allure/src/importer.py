@@ -5,8 +5,6 @@ import dataclasses
 from datetime import datetime
 import typing
 
-from testit_api_client.model.auto_test_api_result import AutoTestApiResult
-
 from .apiclient import ApiClient
 from .configurator import Configurator
 from .parser import Parser
@@ -56,35 +54,24 @@ class Importer:
     def __send_test_result(self, test, data_fixtures, history_id):
         test_result = self.__form_test_result(test, data_fixtures, history_id)
 
-        autotest: AutoTestApiResult = self.__api_client.get_autotest(
+        autotests = self.__api_client.get_autotest(
             Converter.build_autotests_search_post_request(
                 self.__project_id,
                 test_result.get_external_id())
         )
 
-        if not autotest:
+        if not autotests:
             autotest_id = self.__api_client.create_autotest(
                 Converter.test_result_to_create_autotest_request(test_result, self.__project_id)
             )
         else:
-            autotest_id = autotest[0].id
+            autotest_id = autotests[0].id
 
-            if test_result.get_outcome() == 'Passed':
-                test_result.set_is_flaky(autotest[0].is_flaky)
+            test_result.set_is_flaky(autotests[0].is_flaky)
 
-                self.__api_client.update_autotest(
-                    Converter.test_result_to_update_autotest_request(test_result, self.__project_id)
-                )
-            else:
-                autotest[0].links = Converter.links_to_links_put_model(test_result.get_links())
-
-                for i in range(0, len(autotest[0].labels)):
-                    autotest[0].labels[i] = \
-                        Converter.label_to_label_post_model(autotest[0].labels[i].name)
-
-                self.__api_client.update_autotest(
-                    Converter.auto_test_model_to_update_autotest_request(autotest[0], self.__project_id)
-                )
+            self.__api_client.update_autotest(
+                Converter.test_result_to_update_autotest_request(test_result, self.__project_id)
+            )
 
         for work_item_id in test_result.get_work_item_ids():
             self.__api_client.link_autotest(autotest_id, work_item_id)
