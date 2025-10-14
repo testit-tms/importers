@@ -377,6 +377,9 @@ class Importer:
         data_fixtures = {}
 
         for container in data_containers.values():
+            if not container.get('start') and not container.get('@start'):
+                continue
+
             container['befores'] = self.__form_steps(container.get('befores'))
             container['afters'] = self.__form_steps(container.get('afters'))
 
