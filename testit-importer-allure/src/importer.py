@@ -235,6 +235,9 @@ class Importer:
         if parent_suite_name in labels_dictionary.keys() and labels_dictionary[parent_suite_name]:
             main_suites.append(labels_dictionary[parent_suite_name])
 
+            if self.__ignore_namespace_name:
+                return main_suites
+
         if suite_name in labels_dictionary.keys() and labels_dictionary[suite_name]:
             main_suites.append(labels_dictionary[suite_name])
 
@@ -377,6 +380,9 @@ class Importer:
         data_fixtures = {}
 
         for container in data_containers.values():
+            if not container.get('start') and not container.get('@start'):
+                continue
+
             container['befores'] = self.__form_steps(container.get('befores'))
             container['afters'] = self.__form_steps(container.get('afters'))
 
