@@ -64,7 +64,7 @@ class ApiClient:
         else:
             logging.error(f'File "{path}" was not found!')
 
-    def get_autotest(self, model: ApiV2AutoTestsSearchPostRequest) -> AutoTestApiResult:
+    def get_autotest(self, model: ApiV2AutoTestsSearchPostRequest) -> typing.List[AutoTestApiResult]:
         """Function returns autotest."""
         return self.__autotest_api.api_v2_auto_tests_search_post(
             api_v2_auto_tests_search_post_request=model)
