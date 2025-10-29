@@ -1,7 +1,7 @@
 """The module provides functionality for reading result files from file system"""
 import logging
 import os
-from typing import BinaryIO
+from typing import BinaryIO, List
 
 from .filedto import FileDto
 from .reader import Reader
@@ -13,7 +13,7 @@ class FileReader(Reader):
     def __init__(self, path_to_results: str):
         self.__path_to_results = path_to_results
 
-    def get_all_files(self) -> list[str]:
+    def get_all_files(self) -> List[str]:
         """Function returns all result files."""
         files = []
         if os.path.isdir(self.__path_to_results):

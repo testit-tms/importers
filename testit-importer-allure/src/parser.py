@@ -2,7 +2,7 @@
 import os
 import json
 import hashlib
-import typing
+from typing import Tuple, Dict, List, BinaryIO
 import xmltodict
 from .filedto import FileDto
 from .reader import Reader
@@ -17,7 +17,7 @@ class Parser:
         self.__data_tests = {}
         self.__data_containers = {}
 
-    def parse_results(self) -> tuple[dict, dict]:
+    def parse_results(self) -> Tuple[Dict, Dict]:
         """Function parses results"""
         files = self.__reader.get_all_files()
 
@@ -26,7 +26,7 @@ class Parser:
 
         return self.__data_tests, self.__data_containers
 
-    def parse_attachment(self, file_name: str) -> typing.BinaryIO:
+    def parse_attachment(self, file_name: str) -> BinaryIO:
         """Function parses attachment"""
         return self.__reader.read_attachment(file_name)
 
@@ -43,11 +43,11 @@ class Parser:
         elif file_extension == '.xml' and file_name[-9:] == 'testsuite':
             self.__read_xml(file)
 
-    def __read_container_data(self, result_data: dict) -> None:
+    def __read_container_data(self, result_data: Dict) -> None:
         if 'children' in result_data:
             self.__data_containers[result_data['uuid']] = result_data
 
-    def __read_result_data(self, result_data: dict) -> None:
+    def __read_result_data(self, result_data: Dict) -> None:
         if 'historyId' not in result_data:
             if 'fullName' in result_data:
                 result_data['historyId'] = self.__get_hash(result_data['fullName'])
@@ -65,7 +65,7 @@ class Parser:
         if not content:
             return
 
-        result_data: dict = json.loads(content)
+        result_data: Dict = json.loads(content)
 
         if 'result' in file_dto.name:
             self.__read_result_data(result_data)
@@ -90,7 +90,7 @@ class Parser:
         else:
             self.__read_xml_testcase(testcases_data)
 
-    def __read_xml_testcase(self, testcase: dict) -> None:
+    def __read_xml_testcase(self, testcase: Dict) -> None:
         if testcase['title'] and testcase['name']:
             md5 = hashlib.md5()
             md5.update(testcase['title'].encode('utf-8'))
