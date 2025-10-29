@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Tuple, Dict, List, BinaryIO
 
 
 class StepResult:
@@ -8,9 +9,9 @@ class StepResult:
     __duration: int = 0
     __started_on: datetime = None
     __completed_on: datetime = None
-    __step_results: list = None
-    __attachments: list = None
-    __parameters: dict = None
+    __step_results: List = None
+    __attachments: List = None
+    __parameters: Dict = None
 
     def __init__(self):
         self.__step_results = []
@@ -65,26 +66,26 @@ class StepResult:
     def get_completed_on(self) -> datetime:
         return self.__completed_on
 
-    def set_step_results(self, step_results: list):
+    def set_step_results(self, step_results: List):
         self.__step_results = step_results
 
         return self
 
-    def get_step_results(self) -> list:
+    def get_step_results(self) -> List:
         return self.__step_results
 
-    def set_attachments(self, attachments: list):
+    def set_attachments(self, attachments: List):
         self.__attachments = attachments
 
         return self
 
-    def get_attachments(self) -> list:
+    def get_attachments(self) -> List:
         return self.__attachments
 
-    def set_parameters(self, parameters: dict):
+    def set_parameters(self, parameters: Dict):
         self.__parameters = parameters
 
         return self
 
-    def get_parameters(self) -> dict:
+    def get_parameters(self) -> Dict:
         return self.__parameters

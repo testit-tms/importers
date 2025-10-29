@@ -1,6 +1,7 @@
 """The module provides functionality for reading result files from file system"""
 import logging
 import os
+from typing import BinaryIO, List
 
 from .filedto import FileDto
 from .reader import Reader
@@ -12,7 +13,7 @@ class FileReader(Reader):
     def __init__(self, path_to_results: str):
         self.__path_to_results = path_to_results
 
-    def get_all_files(self):
+    def get_all_files(self) -> List[str]:
         """Function returns all result files."""
         files = []
         if os.path.isdir(self.__path_to_results):
@@ -32,11 +33,11 @@ class FileReader(Reader):
 
         return files
 
-    def read_file(self, file_name: str):
+    def read_file(self, file_name: str) -> FileDto:
         """Function reads result file by name."""
         return FileDto(file_name, open(self.__get_path(file_name), encoding='UTF-8'))
 
-    def read_attachment(self, file_name: str):
+    def read_attachment(self, file_name: str) -> BinaryIO:
         """Function reads attachment by name."""
         path = self.__get_path(file_name)
 
@@ -45,9 +46,9 @@ class FileReader(Reader):
 
         logging.error(f"Can't read attachment: {path} does not exist!")
 
-    def remove_attachment(self, file_name: str):
+    def remove_attachment(self, file_name: str) -> None:
         """Function removes attachment by name."""
         return
 
-    def __get_path(self, path: str):
+    def __get_path(self, path: str) -> str:
         return self.__path_to_results + path

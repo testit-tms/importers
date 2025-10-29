@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from typing import BinaryIO
 
 
 class Reader:
@@ -13,7 +14,7 @@ class Reader:
         pass
 
     @abstractmethod
-    def read_attachment(self, file_name: str):
+    def read_attachment(self, file_name: str) -> BinaryIO:
         pass
 
     @abstractmethod

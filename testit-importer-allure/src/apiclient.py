@@ -1,7 +1,7 @@
 """The module provides functionality for working with TMS"""
 import logging
 import os
-import typing
+from typing import Tuple, Dict, List, BinaryIO
 
 from testit_api_client import ApiClient as TmsClient
 from testit_api_client import Configuration
@@ -64,7 +64,7 @@ class ApiClient:
         else:
             logging.error(f'File "{path}" was not found!')
 
-    def get_autotest(self, model: ApiV2AutoTestsSearchPostRequest) -> typing.List[AutoTestApiResult]:
+    def get_autotest(self, model: ApiV2AutoTestsSearchPostRequest) -> List[AutoTestApiResult]:
         """Function returns autotest."""
         return self.__autotest_api.api_v2_auto_tests_search_post(
             api_v2_auto_tests_search_post_request=model)
@@ -77,7 +77,7 @@ class ApiClient:
 
         return response.id
 
-    def create_autotests(self, models: typing.List[AutoTestPostModel]) -> None:
+    def create_autotests(self, models: List[AutoTestPostModel]) -> None:
         """Function creates autotests"""
         models = HtmlEscapeUtils.escape_html_in_object(models)
         logging.debug(f'Creating autotests: "{models}')
@@ -95,7 +95,7 @@ class ApiClient:
         except Exception as exc:
             logging.error(f'Update "{model.name}" status: {exc}')
 
-    def update_autotests(self, models: typing.List[AutoTestPutModel]) -> None:
+    def update_autotests(self, models: List[AutoTestPutModel]) -> None:
         """Function updates autotests"""
         try:
             models = HtmlEscapeUtils.escape_html_in_object(models)
@@ -128,7 +128,7 @@ class ApiClient:
         except Exception as exc:
             logging.error(f"Set result status: {exc}")
 
-    def __send_test_results(self, testrun_id: str, test_results: typing.List[AutoTestResultsForTestRunModel]) -> None:
+    def __send_test_results(self, testrun_id: str, test_results: List[AutoTestResultsForTestRunModel]) -> None:
         """Function sends autotest results to test run"""
         try:
             test_results = HtmlEscapeUtils.escape_html_in_object(test_results)

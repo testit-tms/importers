@@ -1,4 +1,4 @@
-import typing
+from typing import Tuple, Dict, List, BinaryIO
 from datetime import datetime
 
 from testit_api_client.models import (
@@ -241,7 +241,7 @@ class Converter:
             )
 
     @classmethod
-    def links_to_links_post_model(cls, links: typing.List[Link]) -> typing.List[LinkPostModel]:
+    def links_to_links_post_model(cls, links: List[Link]) -> List[LinkPostModel]:
         post_model_links = []
 
         for link in links:
@@ -255,7 +255,7 @@ class Converter:
         return post_model_links
 
     @classmethod
-    def links_to_links_put_model(cls, links: typing.List[Link]) -> typing.List[LinkPutModel]:
+    def links_to_links_put_model(cls, links: List[Link]) -> List[LinkPutModel]:
         put_model_links = []
 
         for link in links:
@@ -269,7 +269,7 @@ class Converter:
         return put_model_links
 
     @classmethod
-    def step_results_to_autotest_steps_model(cls, steps: typing.List[StepResult]) -> typing.List[AutoTestStepModel]:
+    def step_results_to_autotest_steps_model(cls, steps: List[StepResult]) -> List[AutoTestStepModel]:
         autotest_model_steps = []
 
         for step in steps:
@@ -287,7 +287,7 @@ class Converter:
     @staticmethod
     def step_result_to_autotest_step_model(
             title: str,
-            steps: list = None
+            steps: List = None
     ) -> AutoTestStepModel:
         return AutoTestStepModel(
             title=title,
@@ -296,8 +296,8 @@ class Converter:
     @classmethod
     def step_results_to_attachment_put_model_autotest_step_results_model(
             cls,
-            steps: typing.List[StepResult]
-    ) -> typing.List[AttachmentPutModelAutoTestStepResultsModel]:
+            steps: List[StepResult]
+    ) -> List[AttachmentPutModelAutoTestStepResultsModel]:
         autotest_model_step_results = []
 
         for step in steps:
@@ -325,9 +325,9 @@ class Converter:
             duration: int,
             started_on: datetime,
             completed_on: datetime,
-            parameters: dict,
-            attachments: typing.List[str],
-            step_results: typing.List[AttachmentPutModelAutoTestStepResultsModel]
+            parameters: Dict,
+            attachments: List[str],
+            step_results: List[AttachmentPutModelAutoTestStepResultsModel]
     ) -> AttachmentPutModelAutoTestStepResultsModel:
         return AttachmentPutModelAutoTestStepResultsModel(
             title=title,

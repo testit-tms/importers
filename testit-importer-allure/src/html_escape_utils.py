@@ -1,7 +1,7 @@
 import os
 import re
 import logging
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Dict
 from datetime import datetime, date, time, timedelta
 from decimal import Decimal
 from uuid import UUID
@@ -61,8 +61,8 @@ class HtmlEscapeUtils:
     def escape_html_in_object(obj: Any) -> Any:
         """
         Escapes HTML tags in all string attributes of an object using reflection.
-        Also processes list attributes: if list of objects - calls escape_html_in_object_list,
-        if list of strings - escapes each string.
+        Also processes List attributes: if List of objects - calls escape_html_in_object_list,
+        if List of strings - escapes each string.
         Can be disabled by setting NO_ESCAPE_HTML environment variable to "true".
 
         Args:
@@ -90,14 +90,14 @@ class HtmlEscapeUtils:
     @staticmethod
     def escape_html_in_object_list(obj_list: Optional[List[Any]]) -> Optional[List[Any]]:
         """
-        Escapes HTML tags in all string attributes of objects in a list using reflection.
+        Escapes HTML tags in all string attributes of objects in a List using reflection.
         Can be disabled by setting NO_ESCAPE_HTML environment variable to "true".
 
         Args:
-            obj_list: The list of objects to process
+            obj_list: The List of objects to process
 
         Returns:
-            The processed list with escaped strings in all objects
+            The processed List with escaped strings in all objects
         """
         if obj_list is None:
             return None
@@ -162,7 +162,7 @@ class HtmlEscapeUtils:
     @staticmethod
     def _process_list(lst: List[Any]) -> None:
         """
-        Process a list for HTML escaping.
+        Process a List for HTML escaping.
         """
         if not lst:
             return

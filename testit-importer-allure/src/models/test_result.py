@@ -1,4 +1,4 @@
-import typing
+from typing import Tuple, Dict, List, BinaryIO
 
 from .link import Link
 from .step_result import StepResult
@@ -16,14 +16,14 @@ class TestResult:
     __classname: str = None
     __message: str = None
     __traces: str = None
-    __step_results: typing.List[StepResult] = []
-    __setup_results: typing.List[StepResult] = []
-    __teardown_results: typing.List[StepResult] = []
-    __links: typing.List[Link] = []
-    __attachments: typing.List[str] = []
-    __labels: typing.List[str] = []
-    __work_item_ids: typing.List[str] = []
-    __parameters: dict = {}
+    __step_results: List[StepResult] = []
+    __setup_results: List[StepResult] = []
+    __teardown_results: List[StepResult] = []
+    __links: List[Link] = []
+    __attachments: List[str] = []
+    __labels: List[str] = []
+    __work_item_ids: List[str] = []
+    __parameters: Dict = {}
     __is_flaky: bool = False
 
     def set_external_id(self, external_id: str):
@@ -114,68 +114,68 @@ class TestResult:
     def get_traces(self) -> str:
         return self.__traces
 
-    def set_step_results(self, step_results: typing.List[StepResult]):
+    def set_step_results(self, step_results: List[StepResult]):
         self.__step_results = step_results
 
         return self
 
-    def get_step_results(self) -> typing.List[StepResult]:
+    def get_step_results(self) -> List[StepResult]:
         return self.__step_results
 
-    def set_setup_results(self, setup_results: typing.List[StepResult]):
+    def set_setup_results(self, setup_results: List[StepResult]):
         self.__setup_results = setup_results
 
         return self
 
-    def get_setup_results(self) -> typing.List[StepResult]:
+    def get_setup_results(self) -> List[StepResult]:
         return self.__setup_results
 
-    def set_teardown_results(self, teardown_results: typing.List[StepResult]):
+    def set_teardown_results(self, teardown_results: List[StepResult]):
         self.__teardown_results = teardown_results
 
         return self
 
-    def get_teardown_results(self) -> typing.List[StepResult]:
+    def get_teardown_results(self) -> List[StepResult]:
         return self.__teardown_results
 
-    def set_links(self, links: list):
+    def set_links(self, links: List):
         self.__links = links
 
         return self
 
-    def get_links(self) -> list:
+    def get_links(self) -> List:
         return self.__links
 
-    def set_attachments(self, attachments: list):
+    def set_attachments(self, attachments: List):
         self.__attachments = attachments
 
         return self
 
-    def get_attachments(self) -> list:
+    def get_attachments(self) -> List:
         return self.__attachments
 
-    def set_labels(self, labels: list):
+    def set_labels(self, labels: List):
         self.__labels = labels
 
         return self
 
-    def get_labels(self) -> list:
+    def get_labels(self) -> List:
         return self.__labels
 
-    def set_work_item_ids(self, work_item_ids: list):
+    def set_work_item_ids(self, work_item_ids: List):
         self.__work_item_ids = work_item_ids
 
         return self
 
-    def get_work_item_ids(self) -> list:
+    def get_work_item_ids(self) -> List:
         return self.__work_item_ids
 
-    def set_parameters(self, parameters: dict):
+    def set_parameters(self, parameters: Dict):
         self.__parameters = parameters
 
         return self
 
-    def get_parameters(self) -> dict:
+    def get_parameters(self) -> Dict:
         return self.__parameters
 
     def set_is_flaky(self, is_flaky: bool):
