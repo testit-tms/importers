@@ -13,6 +13,7 @@ CONFIG_CERT_VALIDATION = 'certValidation'
 CONFIG_NAME = 'connection_config.ini'
 ALLURE_IGNORE_PACKAGE_NAME = 'ignorePackageName'
 CONFIG_INCLUDE_RERUNS = 'includeReruns'
+ALLURE_USE_NAME = 'useName'
 
 RABBITMQ_CONFIG_SECTION = 'rabbitmq'
 RABBITMQ_CONFIG_URL = 'host'
@@ -74,6 +75,10 @@ class Configurator:
     def get_include_reruns(self):
         """Function returns include reruns."""
         return self.config.get(CONFIG_SECTION, CONFIG_INCLUDE_RERUNS)
+
+    def get_use_name(self):
+        """Function returns ignore package name."""
+        return self.config.get(CONFIG_SECTION, ALLURE_USE_NAME)
 
     def get_rabbitmq_url(self):
         """Function returns rabbit mq url."""
@@ -199,6 +204,15 @@ class Configurator:
             metavar="DIR",
             default=None,
             help='Import the Allure report in the specified directory if it exists'
+        )
+        self.parser.add_argument(
+            '-un',
+            '--usename',
+            action="store",
+            dest="use_name",
+            metavar="True or False",
+            default=False,
+            help='Use name instead of fullName to determine if test exists'
         )
         self.parser.add_argument(
             '-rh',
@@ -348,6 +362,7 @@ class Configurator:
 
         self.config.set(CONFIG_SECTION, ALLURE_IGNORE_PACKAGE_NAME, args.ignore_package_name)
         self.config.set(CONFIG_SECTION, CONFIG_INCLUDE_RERUNS, args.include_reruns)
+        self.config.set(CONFIG_SECTION, ALLURE_USE_NAME, args.use_name)
 
         if args.alluredir:
             self.path_to_results = args.alluredir

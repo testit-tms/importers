@@ -12,10 +12,11 @@ from .reader import Reader
 class Parser:
     """Class representing a parser"""
 
-    def __init__(self, reader: Reader):
+    def __init__(self, reader: Reader, use_name: bool):
         self.__reader = reader
         self.__data_tests = {}
         self.__data_containers = {}
+        self.__use_name = use_name
 
     def parse_results(self) -> Tuple[Dict, Dict]:
         """Function parses results"""
@@ -47,12 +48,15 @@ class Parser:
         if 'children' in result_data:
             self.__data_containers[result_data['uuid']] = result_data
 
-    def __read_result_data(self, result_data: Dict) -> None:
-        if 'historyId' not in result_data:
-            if 'fullName' in result_data:
-                result_data['historyId'] = self.__get_hash(result_data['fullName'])
-            else:
-                result_data['historyId'] = self.__get_hash(result_data['uuid'])
+    def __read_result_data(self, result_data: Dict, use_name = False) -> None:
+        if use_name and 'name' in result_data:
+            result_data['historyId'] = self.__get_hash(result_data['name'])
+        else:
+            if 'historyId' not in result_data:
+                if 'fullName' in result_data:
+                    result_data['historyId'] = self.__get_hash(result_data['fullName'])
+                else:
+                    result_data['historyId'] = self.__get_hash(result_data['uuid'])
 
         if str(result_data['historyId']) not in self.__data_tests:
             self.__data_tests[str(result_data['historyId'])] = []
@@ -68,7 +72,7 @@ class Parser:
         result_data: Dict = json.loads(content)
 
         if 'result' in file_dto.name:
-            self.__read_result_data(result_data)
+            self.__read_result_data(result_data, self.__use_name)
             return
         if 'container' in file_dto.name:
             self.__read_container_data(result_data)
