@@ -212,7 +212,7 @@ class Configurator:
             dest="use_name",
             metavar="True or False",
             default=False,
-            help='Use name instead of fullName to determine if test exists'
+            help='Use name to determine if test externalId'
         )
         self.parser.add_argument(
             '-rh',
