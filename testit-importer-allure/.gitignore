@@ -7,6 +7,7 @@ __pycache__/
 .docker
 # C extensions
 *.so
+.run
 
 # Distribution / packaging
 .Python
