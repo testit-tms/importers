@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = "1.14.4"
+VERSION = "1.14.5"
 
 setup(
     name='testit-importer-allure',
@@ -25,7 +25,7 @@ setup(
     package_data={'testit_importer_allure': ['../connection_config.ini']},
     package_dir={'testit_importer_allure': 'src'},
     install_requires=[
-        'testit-api-client==7.1.2',
+        'testit-api-client==7.2.0',
         'xmltodict',
         'minio',
         'pika'
