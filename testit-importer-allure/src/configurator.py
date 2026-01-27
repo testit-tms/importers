@@ -77,7 +77,7 @@ class Configurator:
         return self.config.get(CONFIG_SECTION, CONFIG_INCLUDE_RERUNS)
 
     def get_use_name(self):
-        """Function returns ignore package name."""
+        """Function returns use name."""
         return self.config.get(CONFIG_SECTION, ALLURE_USE_NAME)
 
     def get_rabbitmq_url(self):
