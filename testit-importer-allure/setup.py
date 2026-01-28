@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = "1.14.5"
+VERSION = "1.14.6"
 
 setup(
     name='testit-importer-allure',
