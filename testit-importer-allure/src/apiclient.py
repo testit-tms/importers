@@ -1,7 +1,7 @@
 """The module provides functionality for working with TMS"""
 import logging
 import os
-from typing import Tuple, Dict, List, BinaryIO
+from typing import List
 
 from testit_api_client import ApiClient as TmsClient
 from testit_api_client import Configuration
@@ -11,9 +11,9 @@ from testit_api_client.models import (
     LinkAutoTestToWorkItemRequest,
     AttachmentPutModel,
     ApiV2AutoTestsSearchPostRequest,
-    AutoTestPostModel,
+    AutoTestCreateApiModel,
     CreateAutoTestRequest,
-    AutoTestPutModel,
+    AutoTestUpdateApiModel,
     UpdateAutoTestRequest,
     AutoTestResultsForTestRunModel,
 )
@@ -77,7 +77,7 @@ class ApiClient:
 
         return response.id
 
-    def create_autotests(self, models: List[AutoTestPostModel]) -> None:
+    def create_autotests(self, models: List[AutoTestCreateApiModel]) -> None:
         """Function creates autotests"""
         models = HtmlEscapeUtils.escape_html_in_object(models)
         logging.debug(f'Creating autotests: "{models}')
@@ -95,7 +95,7 @@ class ApiClient:
         except Exception as exc:
             logging.error(f'Update "{model.name}" status: {exc}')
 
-    def update_autotests(self, models: List[AutoTestPutModel]) -> None:
+    def update_autotests(self, models: List[AutoTestUpdateApiModel]) -> None:
         """Function updates autotests"""
         try:
             models = HtmlEscapeUtils.escape_html_in_object(models)
