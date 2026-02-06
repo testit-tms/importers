@@ -1,23 +1,23 @@
-from typing import Tuple, Dict, List, BinaryIO
+from typing import Dict, List
 from datetime import datetime
 
 from testit_api_client.models import (
     AutoTestModel,
-    AutoTestPostModel,
+    AutoTestCreateApiModel,
     CreateAutoTestRequest,
-    AutoTestPutModel,
+    AutoTestUpdateApiModel,
     UpdateAutoTestRequest,
-    AutoTestStepModel,
+    AutoTestStepApiModel,
     AvailableTestResultOutcome,
     AutoTestSearchApiModelFilter,
     AutoTestSearchApiModelIncludes,
     ApiV2AutoTestsSearchPostRequest,
-    LinkPostModel,
-    LinkPutModel,
+    LinkCreateApiModel,
+    LinkUpdateApiModel,
     LinkType,
     AutoTestResultsForTestRunModel,
     AttachmentPutModelAutoTestStepResultsModel,
-    LabelPostModel)
+    LabelApiModel)
 
 from .models import Link, StepResult, TestResult
 
@@ -45,8 +45,8 @@ class Converter:
             cls,
             test_result: TestResult,
             project_id: str
-    ) -> AutoTestPostModel:
-        return AutoTestPostModel(
+    ) -> AutoTestCreateApiModel:
+        return AutoTestCreateApiModel(
             external_id=test_result.get_external_id(),
             project_id=project_id,
             name=test_result.get_title(),
@@ -85,8 +85,8 @@ class Converter:
             cls,
             test_result: TestResult,
             project_id: str
-    ) -> AutoTestPutModel:
-        return AutoTestPutModel(
+    ) -> AutoTestUpdateApiModel:
+        return AutoTestUpdateApiModel(
             external_id=test_result.get_external_id(),
             project_id=project_id,
             name=test_result.get_title(),
@@ -127,8 +127,8 @@ class Converter:
             cls,
             auto_test_model: AutoTestModel,
             project_id: str
-    ) -> AutoTestPutModel:
-        return AutoTestPutModel(
+    ) -> AutoTestUpdateApiModel:
+        return AutoTestUpdateApiModel(
             external_id=auto_test_model.external_id,
             project_id=project_id,
             name=auto_test_model.name,
@@ -196,11 +196,11 @@ class Converter:
             title: str,
             url_type,
             description: str
-    ) -> LinkPostModel:
+    ) -> LinkCreateApiModel:
         if url_type:
             if type(url_type) is str:
                 url_type = LinkType(value=url_type)
-            return LinkPostModel(
+            return LinkCreateApiModel(
                 url=url,
                 title=title,
                 type=url_type,
@@ -208,7 +208,7 @@ class Converter:
                 has_info=True,
             )
         else:
-            return LinkPostModel(
+            return LinkCreateApiModel(
                 url=url,
                 title=title,
                 description=description,
@@ -221,11 +221,11 @@ class Converter:
             title: str,
             url_type,
             description: str
-    ) -> LinkPutModel:
+    ) -> LinkUpdateApiModel:
         if url_type:
             if type(url_type) is str:
                 url_type = LinkType(value=url_type)
-            return LinkPutModel(
+            return LinkUpdateApiModel(
                 url=url,
                 title=title,
                 type=url_type,
@@ -233,7 +233,7 @@ class Converter:
                 has_info=True,
             )
         else:
-            return LinkPutModel(
+            return LinkUpdateApiModel(
                 url=url,
                 title=title,
                 description=description,
@@ -241,7 +241,7 @@ class Converter:
             )
 
     @classmethod
-    def links_to_links_post_model(cls, links: List[Link]) -> List[LinkPostModel]:
+    def links_to_links_post_model(cls, links: List[Link]) -> List[LinkCreateApiModel]:
         post_model_links = []
 
         for link in links:
@@ -255,7 +255,7 @@ class Converter:
         return post_model_links
 
     @classmethod
-    def links_to_links_put_model(cls, links: List[Link]) -> List[LinkPutModel]:
+    def links_to_links_put_model(cls, links: List[Link]) -> List[LinkUpdateApiModel]:
         put_model_links = []
 
         for link in links:
@@ -269,7 +269,7 @@ class Converter:
         return put_model_links
 
     @classmethod
-    def step_results_to_autotest_steps_model(cls, steps: List[StepResult]) -> List[AutoTestStepModel]:
+    def step_results_to_autotest_steps_model(cls, steps: List[StepResult]) -> List[AutoTestStepApiModel]:
         autotest_model_steps = []
 
         for step in steps:
@@ -288,8 +288,8 @@ class Converter:
     def step_result_to_autotest_step_model(
             title: str,
             steps: List = None
-    ) -> AutoTestStepModel:
-        return AutoTestStepModel(
+    ) -> AutoTestStepApiModel:
+        return AutoTestStepApiModel(
             title=title,
             steps=steps)
 
@@ -341,5 +341,5 @@ class Converter:
         )
 
     @staticmethod
-    def label_to_label_post_model(label: str) -> LabelPostModel:
-        return LabelPostModel(name=label)
+    def label_to_label_post_model(label: str) -> LabelApiModel:
+        return LabelApiModel(name=label)
