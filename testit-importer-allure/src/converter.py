@@ -12,6 +12,7 @@ from testit_api_client.models import (
     AutoTestSearchApiModelFilter,
     AutoTestSearchApiModelIncludes,
     ApiV2AutoTestsSearchPostRequest,
+    LinkPostModel,
     LinkCreateApiModel,
     LinkUpdateApiModel,
     LinkType,
@@ -58,7 +59,7 @@ class Converter:
             namespace=test_result.get_namespace(),
             classname=test_result.get_classname(),
             description=test_result.get_description(),
-            links=cls.links_to_links_post_model(test_result.get_links()),
+            links=cls.links_to_links_create_api_model(test_result.get_links()),
             labels=test_result.get_labels()
         )
 
@@ -78,7 +79,7 @@ class Converter:
             namespace=test_result.get_namespace(),
             classname=test_result.get_classname(),
             description=test_result.get_description(),
-            links=cls.links_to_links_post_model(test_result.get_links()),
+            links=cls.links_to_links_create_api_model(test_result.get_links()),
             labels=test_result.get_labels()
         )
 
@@ -176,7 +177,7 @@ class Converter:
         model = AutoTestResultsForTestRunModel(
             configuration_id=configuration_id,
             auto_test_external_id=test_result.get_external_id(),
-            status_type=TestStatusType(test_result.get_status_type()),
+            status_type=TestStatusType(test_result.get_status_type().value),
             step_results=cls.step_results_to_attachment_put_model_autotest_step_results_model(
                 test_result.get_step_results()),
             setup_results=cls.step_results_to_attachment_put_model_autotest_step_results_model(
@@ -199,27 +200,38 @@ class Converter:
         return model
 
     @staticmethod
-    def link_to_link_post_model(
-            url: str,
-            title: str,
-            url_type,
-            description: str
-    ) -> LinkCreateApiModel:
-        if url_type:
-            if type(url_type) is str:
-                url_type = LinkType(value=url_type)
+    def link_to_link_post_model(link: Link) -> LinkPostModel:
+        if link.get_link_type():
+            return LinkPostModel(
+                url=link.get_url(),
+                title=link.get_title(),
+                type=LinkType(link.get_link_type()),
+                description=link.get_description(),
+                has_info=True,
+            )
+        else:
+            return LinkPostModel(
+                url=link.get_url(),
+                title=link.get_title(),
+                description=link.get_description(),
+                has_info=True,
+            )
+
+    @staticmethod
+    def link_to_link_create_api_model(link: Link) -> LinkCreateApiModel:
+        if link.get_link_type():
             return LinkCreateApiModel(
-                url=url,
-                title=title,
-                type=url_type,
-                description=description,
+                url=link.get_url(),
+                title=link.get_title(),
+                type=LinkType(value=link.get_link_type()),
+                description=link.get_description(),
                 has_info=True,
             )
         else:
             return LinkCreateApiModel(
-                url=url,
-                title=title,
-                description=description,
+                url=link.get_url(),
+                title=link.get_title(),
+                description=link.get_description(),
                 has_info=True,
             )
 
@@ -249,16 +261,24 @@ class Converter:
             )
 
     @classmethod
-    def links_to_links_post_model(cls, links: List[Link]) -> List[LinkCreateApiModel]:
+    def links_to_links_post_model(cls, links: List[Link]) -> List[LinkPostModel]:
         post_model_links = []
 
         for link in links:
-            post_model_links.append(cls.link_to_link_post_model(
-                link.get_url(),
-                link.get_title(),
-                link.get_link_type(),
-                link.get_description()
-            ))
+            post_model_links.append(
+                cls.link_to_link_post_model(link)
+            )
+
+        return post_model_links
+
+    @classmethod
+    def links_to_links_create_api_model(cls, links: List[Link]) -> List[LinkCreateApiModel]:
+        post_model_links = []
+
+        for link in links:
+            post_model_links.append(
+                cls.link_to_link_create_api_model(link)
+            )
 
         return post_model_links
 

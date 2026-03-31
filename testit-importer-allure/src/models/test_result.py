@@ -44,8 +44,10 @@ class TestResult:
     def get_outcome(self) -> str:
         return self.__outcome
 
-    def set_status_type(self, value: StatusType) -> None:
+    def set_status_type(self, value: StatusType):
         self.__status_type = value
+
+        return self
 
     def get_status_type(self) -> StatusType:
         return self.__status_type
