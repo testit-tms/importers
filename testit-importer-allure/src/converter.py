@@ -17,7 +17,9 @@ from testit_api_client.models import (
     LinkType,
     AutoTestResultsForTestRunModel,
     AttachmentPutModelAutoTestStepResultsModel,
-    LabelApiModel)
+    LabelApiModel,
+    TestStatusType,
+)
 
 from .models import Link, StepResult, TestResult
 
@@ -168,12 +170,13 @@ class Converter:
     def test_result_to_testrun_result_post_model(
             cls,
             test_result: TestResult,
-            configuration_id: str
+            configuration_id: str,
+            status_codes: List[str]
     ) -> AutoTestResultsForTestRunModel:
-        return AutoTestResultsForTestRunModel(
+        model = AutoTestResultsForTestRunModel(
             configuration_id=configuration_id,
             auto_test_external_id=test_result.get_external_id(),
-            outcome=AvailableTestResultOutcome(test_result.get_outcome()),
+            status_type=TestStatusType(test_result.get_status_type()),
             step_results=cls.step_results_to_attachment_put_model_autotest_step_results_model(
                 test_result.get_step_results()),
             setup_results=cls.step_results_to_attachment_put_model_autotest_step_results_model(
@@ -189,6 +192,11 @@ class Converter:
             started_on=test_result.get_started_on(),
             completed_on=test_result.get_completed_on(),
         )
+
+        if test_result.get_outcome().upper() in status_codes:
+            model.status_code = test_result.get_outcome()
+
+        return model
 
     @staticmethod
     def link_to_link_post_model(
