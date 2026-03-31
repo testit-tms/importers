@@ -16,8 +16,10 @@ from testit_api_client.models import (
     AutoTestUpdateApiModel,
     UpdateAutoTestRequest,
     AutoTestResultsForTestRunModel,
+    ProjectModel,
+    WorkflowApiResult,
 )
-from testit_api_client.apis import TestRunsApi, AutoTestsApi, AttachmentsApi
+from testit_api_client.apis import TestRunsApi, AutoTestsApi, AttachmentsApi, ProjectsApi, WorkflowsApi
 from .html_escape_utils import HtmlEscapeUtils
 
 
@@ -39,6 +41,8 @@ class ApiClient:
         self.__test_run_api = TestRunsApi(api_client=client)
         self.__autotest_api = AutoTestsApi(api_client=client)
         self.__attachments_api = AttachmentsApi(api_client=client)
+        self.__projects_api = ProjectsApi(api_client=client)
+        self.__workflows_api = WorkflowsApi(api_client=client)
 
     def create_test_run(self, project_id: str, name: str) -> str:
         """Function creates test run and returns test run id."""
@@ -138,3 +142,18 @@ class ApiClient:
             logging.info("Set results passed!")
         except Exception as exc:
             logging.error(f"Set results status: {exc}")
+
+    def __get_project(self, project_id: str) -> ProjectModel:
+        """Function returns ProjectModel."""
+        return self.__projects_api.get_project_by_id(id=project_id)
+
+    def __get_workflow_by_id(self, workflow_id: str) -> WorkflowApiResult:
+        """Function returns WorkflowApiResult."""
+        return self.__workflows_api.api_v2_workflows_id_get(id=workflow_id)
+
+    def get_status_codes(self, project_id: str) -> List[str]:
+        """Function returns list of statuses from project."""
+        project: ProjectModel = self.__get_project(project_id)
+        workflow: WorkflowApiResult = self.__get_workflow_by_id(project.workflow_id)
+
+        return [status.code for status in workflow.statuses]

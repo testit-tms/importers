@@ -3,12 +3,13 @@ import os
 import re
 import dataclasses
 from datetime import datetime
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Optional
 
 from testit_api_client.model.attachment_put_model import AttachmentPutModel
 
 from .apiclient import ApiClient
 from .configurator import Configurator
+from .models.status_type import StatusType
 from .parser import Parser
 from .converter import Converter
 from .models import Link, LinkType, StepResult, TestResult
@@ -38,6 +39,7 @@ class Importer:
         data_fixtures: Dict = self.__form_fixtures(data_containers)
 
         self.__set_test_run()
+        status_codes = self.__api_client.get_status_codes(self.__project_id)
 
         for history_id in data_tests:  # str
             test_results = data_tests[history_id]
@@ -45,17 +47,22 @@ class Importer:
                 test_results, key=lambda test_result: test_result[('' if 'uuid' in test_result else '@') + 'start'])
 
             if self.__include_reruns:
-                self.__send_test_results(sorted_test_results_by_start, data_fixtures, history_id)
+                self.__send_test_results(sorted_test_results_by_start, data_fixtures, history_id, status_codes)
 
                 continue
 
-            self.__send_test_results(sorted_test_results_by_start[-1:], data_fixtures, history_id)
+            self.__send_test_results(sorted_test_results_by_start[-1:], data_fixtures, history_id, status_codes)
 
-    def __send_test_results(self, test_results: List[Dict], data_fixtures: Dict, history_id: str) -> None:
+    def __send_test_results(
+            self,
+            test_results: List[Dict],
+            data_fixtures: Dict,
+            history_id: str,
+            status_codes: List[str]) -> None:
         for test_result in test_results:
-            self.__send_test_result(test_result, data_fixtures, history_id)
+            self.__send_test_result(test_result, data_fixtures, history_id, status_codes)
 
-    def __send_test_result(self, test: Dict, data_fixtures: Dict, history_id: str) -> None:
+    def __send_test_result(self, test: Dict, data_fixtures: Dict, history_id: str, status_codes: List[str]) -> None:
         test_result = self.__form_test_result(test, data_fixtures, history_id)
 
         autotest = self.__api_client.get_autotest(
@@ -82,7 +89,7 @@ class Importer:
 
         self.__api_client.send_test_result(
             self.__testrun_id,
-            Converter.test_result_to_testrun_result_post_model(test_result, self.__configuration_id)
+            Converter.test_result_to_testrun_result_post_model(test_result, self.__configuration_id, status_codes)
         )
 
     def __form_test_result(self, test: Dict, data_fixtures: Dict, history_id: str) -> TestResult:
@@ -97,14 +104,16 @@ class Importer:
         completed_on = datetime.fromtimestamp(int(test[prefix + 'stop']) / 1000.0)
         title = test['name']
         description = self.__get_description(test.get('description', None))
-        outcome = 'Blocked'
+        outcome = 'blocked'
+        status_type = self.__parse_status_type(test, prefix)
 
         if prefix + 'status' in test:
-            outcome = test[prefix + 'status'].title() if test[prefix + 'status'] in ('passed', 'skipped') else 'Failed'
+            outcome = test[prefix + 'status']
 
         test_result \
             .set_external_id(history_id) \
             .set_outcome(outcome) \
+            .set_status_type(status_type) \
             .set_title(title) \
             .set_description(description) \
             .set_step_results(step_results) \
@@ -148,6 +157,15 @@ class Importer:
 
         return test_result
 
+    @staticmethod
+    def __parse_status_type(test: Dict, prefix: str) -> StatusType:
+        if not prefix + 'status' in test or test[prefix + 'status'] == 'skipped':
+            return StatusType.INCOMPLETE
+        if test[prefix + 'status'] == 'passed':
+            return StatusType.SUCCEEDED
+
+        return StatusType.FAILED
+
     def __set_test_run(self) -> None:
         if self.__testrun_id is not None:
             return
@@ -187,7 +205,7 @@ class Importer:
             return [value]
 
     @staticmethod
-    def __get_description(allure_description: Any) -> str | None:
+    def __get_description(allure_description: Any):
         if isinstance(allure_description, str):
             return allure_description
         if isinstance(allure_description, dict):

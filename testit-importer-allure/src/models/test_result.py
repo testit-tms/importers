@@ -1,12 +1,14 @@
-from typing import Tuple, Dict, List, BinaryIO
+from typing import Dict, List
 
 from .link import Link
+from .status_type import StatusType
 from .step_result import StepResult
 
 
 class TestResult:
     __external_id: str = None
     __outcome: str = None
+    __status_type: StatusType = None
     __title: str = None
     __description: str = None
     __duration: int = 0
@@ -41,6 +43,14 @@ class TestResult:
 
     def get_outcome(self) -> str:
         return self.__outcome
+
+    def set_status_type(self, value: StatusType):
+        self.__status_type = value
+
+        return self
+
+    def get_status_type(self) -> StatusType:
+        return self.__status_type
 
     def set_title(self, title: str):
         self.__title = title
