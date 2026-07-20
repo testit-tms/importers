@@ -213,7 +213,7 @@ class Converter:
             return LinkPostModel(
                 url=link.get_url(),
                 title=link.get_title(),
-                type=LinkType.RELATED,
+                type=LinkType(value='Related'),
                 description=link.get_description(),
                 has_info=True,
             )
@@ -232,7 +232,7 @@ class Converter:
             return LinkCreateApiModel(
                 url=link.get_url(),
                 title=link.get_title(),
-                type=LinkType.RELATED,
+                type=LinkType(value='Related'),
                 description=link.get_description(),
                 has_info=True,
             )
@@ -245,25 +245,16 @@ class Converter:
             description: str
     ) -> LinkUpdateApiModel:
         if not url_type:
-            url_type = LinkType.RELATED
-        if url_type:
-            if type(url_type) is str:
-                url_type = LinkType(value=url_type)
-            return LinkUpdateApiModel(
-                url=url,
-                title=title,
-                type=url_type,
-                description=description,
-                has_info=True,
-            )
-        else:
-            return LinkUpdateApiModel(
-                url=url,
-                title=title,
-                type=LinkType.RELATED,
-                description=description,
-                has_info=True,
-            )
+            url_type = LinkType(value='Related')
+        if type(url_type) is str:
+            url_type = LinkType(value=url_type)
+        return LinkUpdateApiModel(
+            url=url,
+            title=title,
+            type=url_type,
+            description=description,
+            has_info=True,
+        )
 
     @classmethod
     def links_to_links_post_model(cls, links: List[Link]) -> List[LinkPostModel]:
