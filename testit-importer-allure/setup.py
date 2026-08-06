@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = "1.17.1.post580"
+VERSION = "1.17.2.post580"
 
 setup(
     name='testit-importer-allure',
