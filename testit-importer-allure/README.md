@@ -54,6 +54,63 @@ Use the command `testit --resultsdir allure-results --testrunname <name>` to spe
 <br>Or use the command `testit --resultsdir allure-results --testrunid <id>` to specify the directory with Allure report results and id of test run in TMS instance.
 <br>**Important:** This command initiates the import.
 
+### Test run tags and links
+
+You can attach **test run** tags and links (e.g. CI job URL) so they are visible in TMS while the run is still in progress.
+
+| Source | Tags | Links |
+|--------|------|-------|
+| CLI | `--testruntags` / `-trt` | `--testrunlinks` / `-trl` |
+| Env | `TMS_TEST_RUN_TAGS` | `TMS_TEST_RUN_LINKS` |
+| `connection_config.ini` `[testit]` | `testRunTags` | `testRunLinks` |
+
+Priority: env > CLI > ini. Empty / omitted values mean "do not change".
+
+**Tags** — comma-separated or JSON array:
+
+```text
+smoke,nightly
+```
+
+```json
+["smoke", "nightly"]
+```
+
+**Links** — JSON array (`url` required; `title`, `description`, `type` optional):
+
+```json
+[
+  {
+    "url": "https://gitlab.example.com/group/project/-/jobs/12345",
+    "title": "CI Job",
+    "type": "Related"
+  }
+]
+```
+
+Supported link types: `Related`, `BlockedBy`, `Defect`, `Issue`, `Requirement`, `Repository`.
+
+Behaviour:
+
+- **New test run** (`--testrunname` / default): tags and links are sent in the create request.
+- **Existing test run** (`--testrunid`): tags and links are merged at the start of import (existing items are kept; duplicates by tag name / link URL are skipped).
+
+Example (CI job URL + tags):
+
+```bash
+testit --resultsdir allure-results \
+  --testruntags smoke,nightly \
+  --testrunlinks "[{\"url\":\"$CI_JOB_URL\",\"title\":\"CI Job\",\"type\":\"Related\"}]"
+```
+
+Or via env:
+
+```bash
+export TMS_TEST_RUN_TAGS=smoke,nightly
+export TMS_TEST_RUN_LINKS='[{"url":"https://gitlab.example.com/.../jobs/12345","title":"CI Job","type":"Related"}]'
+testit --resultsdir allure-results
+```
+
 # Contributing
 
 You can help to develop the project. Any contributions are **greatly appreciated**.
