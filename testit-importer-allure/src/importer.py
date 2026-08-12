@@ -32,6 +32,8 @@ class Importer:
         self.__ignore_namespace_name = config.get_ignore_package_name()
         self.__include_reruns = config.get_include_reruns()
         self.__path_to_results = config.get_path()
+        self.__test_run_tags = config.get_test_run_tags()
+        self.__test_run_links = config.get_test_run_links()
 
     def send_result(self) -> None:
         """Function imports result to TMS."""
@@ -168,13 +170,23 @@ class Importer:
 
     def __set_test_run(self) -> None:
         if self.__testrun_id is not None:
+            self.__api_client.apply_test_run_tags_and_links(
+                self.__testrun_id,
+                self.__test_run_tags,
+                self.__test_run_links,
+            )
             return
 
         if self.__testrun_name is not None:
             test_run_name = f'{self.__testrun_name} {datetime.today().strftime("%d %b %Y %H:%M:%S")}'
         else:
             test_run_name = f'AllureRun {datetime.today().strftime("%d %b %Y %H:%M:%S")}'
-        self.__testrun_id = self.__api_client.create_test_run(self.__project_id, test_run_name)
+        self.__testrun_id = self.__api_client.create_test_run(
+            self.__project_id,
+            test_run_name,
+            self.__test_run_tags,
+            self.__test_run_links,
+        )
 
     def __send_attachments(self, attachments) -> List[AttachmentPutModel]:
         attachment_ids = []

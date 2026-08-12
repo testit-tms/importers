@@ -3,6 +3,9 @@ import argparse
 import configparser
 import os
 import re
+from typing import Any, Dict, List, Optional
+
+from .test_run_meta import parse_links, parse_tags
 
 CONFIG_SECTION = 'testit'
 CONFIG_URL = 'url'
@@ -10,6 +13,8 @@ CONFIG_PRIVATE_TOKEN = 'privateToken'
 CONFIG_PROJECT_ID = 'projectID'
 CONFIG_CONFIGURATION_ID = 'configurationID'
 CONFIG_CERT_VALIDATION = 'certValidation'
+CONFIG_TEST_RUN_TAGS = 'testRunTags'
+CONFIG_TEST_RUN_LINKS = 'testRunLinks'
 CONFIG_NAME = 'connection_config.ini'
 ALLURE_IGNORE_PACKAGE_NAME = 'ignorePackageName'
 CONFIG_INCLUDE_RERUNS = 'includeReruns'
@@ -34,12 +39,15 @@ class Configurator:
     path_to_config = None
     specified_testrun = None
     specified_testrun_name = None
+    test_run_tags: Optional[List[str]] = None
+    test_run_links: Optional[List[Dict[str, Any]]] = None
 
     def __init__(self):
         self.__set_config()
         self.__set_parser()
         self.__parse_args()
         self.__load_env_properties()
+        self.__resolve_test_run_meta()
 
     def get_path(self):
         """Function returns path of result files."""
@@ -79,6 +87,14 @@ class Configurator:
     def get_use_name(self):
         """Function returns use name."""
         return self.config.get(CONFIG_SECTION, ALLURE_USE_NAME)
+
+    def get_test_run_tags(self) -> Optional[List[str]]:
+        """Function returns test run tags."""
+        return self.test_run_tags
+
+    def get_test_run_links(self) -> Optional[List[Dict[str, Any]]]:
+        """Function returns test run links."""
+        return self.test_run_links
 
     def get_rabbitmq_url(self):
         """Function returns rabbit mq url."""
@@ -164,6 +180,22 @@ class Configurator:
             action="store",
             dest="set_testrun_name",
             help='Set test run name'
+        )
+        self.parser.add_argument(
+            '-trt',
+            '--testruntags',
+            action="store",
+            dest="set_testrun_tags",
+            metavar='smoke,nightly',
+            help='Set test run tags (comma-separated or JSON array)'
+        )
+        self.parser.add_argument(
+            '-trl',
+            '--testrunlinks',
+            action="store",
+            dest="set_testrun_links",
+            metavar='[{"url":"https://ci.example/jobs/1","title":"CI Job","type":"Related"}]',
+            help='Set test run links as JSON array (url required; title/description/type optional)'
         )
         self.parser.add_argument(
             '-cv',
@@ -294,6 +326,12 @@ class Configurator:
         if f'TMS_CERT_VALIDATION' in os.environ.keys():
             self.config.set(CONFIG_SECTION, CONFIG_CERT_VALIDATION, os.environ.get('TMS_CERT_VALIDATION').lower())
 
+        if 'TMS_TEST_RUN_TAGS' in os.environ.keys():
+            self.config.set(CONFIG_SECTION, CONFIG_TEST_RUN_TAGS, os.environ.get('TMS_TEST_RUN_TAGS'))
+
+        if 'TMS_TEST_RUN_LINKS' in os.environ.keys():
+            self.config.set(CONFIG_SECTION, CONFIG_TEST_RUN_LINKS, os.environ.get('TMS_TEST_RUN_LINKS'))
+
         if 'MINIO_API_HOST' in os.environ.keys():
             self.config.set(MINIO_CONFIG_SECTION, MINIO_CONFIG_URL, os.environ.get('MINIO_API_HOST'))
 
@@ -357,6 +395,12 @@ class Configurator:
         if args.set_testrun_name:
             self.specified_testrun_name = args.set_testrun_name
 
+        if args.set_testrun_tags:
+            self.config.set(CONFIG_SECTION, CONFIG_TEST_RUN_TAGS, args.set_testrun_tags)
+
+        if args.set_testrun_links:
+            self.config.set(CONFIG_SECTION, CONFIG_TEST_RUN_LINKS, args.set_testrun_links)
+
         if args.set_cert_validation:
             self.config.set(CONFIG_SECTION, CONFIG_CERT_VALIDATION, args.set_cert_validation.lower())
 
@@ -398,3 +442,16 @@ class Configurator:
         if args.set_url or args.set_privatetoken or args.set_project or args.set_configuration:
             with open(self.path_to_config, "w", encoding='utf-8') as config_file:
                 self.config.write(config_file)
+
+    def __resolve_test_run_meta(self) -> None:
+        tags_raw = None
+        links_raw = None
+
+        if self.config.has_option(CONFIG_SECTION, CONFIG_TEST_RUN_TAGS):
+            tags_raw = self.config.get(CONFIG_SECTION, CONFIG_TEST_RUN_TAGS)
+
+        if self.config.has_option(CONFIG_SECTION, CONFIG_TEST_RUN_LINKS):
+            links_raw = self.config.get(CONFIG_SECTION, CONFIG_TEST_RUN_LINKS)
+
+        self.test_run_tags = parse_tags(tags_raw)
+        self.test_run_links = parse_links(links_raw)
