@@ -1,12 +1,12 @@
 from setuptools import setup
 
-VERSION = "1.17.2"
+VERSION = "1.17.3"
 
 setup(
     name='testit-importer-allure',
     version=VERSION,
     description='Allure report importer for Test IT',
-    long_description=open('README.md', "r").read(),
+    long_description=open('README.md', "r", encoding='utf-8').read(),
     long_description_content_type="text/markdown",
     url='https://pypi.org/project/testit-importer-allure/',
     author='Integration team',

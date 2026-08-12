@@ -1,7 +1,7 @@
 """The module provides functionality for working with TMS"""
 import logging
 import os
-from typing import List
+from typing import Any, Dict, List, Optional
 
 from testit_api_client import ApiClient as TmsClient
 from testit_api_client import Configuration
@@ -18,9 +18,15 @@ from testit_api_client.models import (
     AutoTestResultsForTestRunModel,
     DetailedProjectApiResult,
     WorkflowApiResult,
+    CreateLinkApiModel,
+    UpdateEmptyRequest,
+    UpdateLinkApiModel,
+    LinkType,
 )
 from testit_api_client.apis import TestRunsApi, AutoTestsApi, AttachmentsApi, ProjectsApi, WorkflowsApi
 from .html_escape_utils import HtmlEscapeUtils
+from .models.link_type import LinkType as ImporterLinkType
+from .test_run_meta import merge_links, merge_tags
 
 
 # TODO: Use bulk-methods after refactoring the importer.py
@@ -44,16 +50,110 @@ class ApiClient:
         self.__projects_api = ProjectsApi(api_client=client)
         self.__workflows_api = WorkflowsApi(api_client=client)
 
-    def create_test_run(self, project_id: str, name: str) -> str:
+    def create_test_run(
+            self,
+            project_id: str,
+            name: str,
+            tags: Optional[List[str]] = None,
+            links: Optional[List[Dict[str, Any]]] = None) -> str:
         """Function creates test run and returns test run id."""
         model = CreateEmptyRequest(
             project_id=project_id,
-            name=name
+            name=name,
+            tags=tags,
+            links=self.__to_create_links(links) if links else None,
         )
         model = HtmlEscapeUtils.escape_html_in_object(model)
         response = self.__test_run_api.create_empty(create_empty_request=model)
 
+        logging.info(
+            f'Created test run "{response.id}"'
+            f'{f" with tags={tags}" if tags else ""}'
+            f'{f" with links={links}" if links else ""}'
+        )
+
         return response.id
+
+    def apply_test_run_tags_and_links(
+            self,
+            test_run_id: str,
+            tags: Optional[List[str]] = None,
+            links: Optional[List[Dict[str, Any]]] = None) -> None:
+        """Merge configured tags/links into an existing test run as early as possible."""
+        if not tags and not links:
+            return
+
+        try:
+            test_run = self.__test_run_api.get_test_run_by_id(id=test_run_id)
+            existing_tags = list(test_run.tags or [])
+            existing_links = [
+                {
+                    'url': item.url,
+                    'title': item.title,
+                    'description': item.description,
+                    'type': str(item.type) if item.type is not None else ImporterLinkType.RELATED,
+                    'id': item.id,
+                }
+                for item in (test_run.links or [])
+            ]
+
+            merged_tags = merge_tags(existing_tags, tags)
+            merged_links = merge_links(existing_links, links)
+
+            model = UpdateEmptyRequest(
+                id=test_run_id,
+                name=test_run.name,
+                description=test_run.description,
+                launch_source=test_run.launch_source,
+                tags=merged_tags,
+                links=self.__to_update_links(merged_links),
+            )
+            model = HtmlEscapeUtils.escape_html_in_object(model)
+            self.__test_run_api.update_empty(update_empty_request=model)
+
+            logging.info(
+                f'Applied tags/links to test run "{test_run_id}": '
+                f'tags={tags or []}, links={links or []}'
+            )
+        except Exception as exc:
+            logging.error(f'Failed to apply tags/links to test run "{test_run_id}": {exc}')
+
+    @staticmethod
+    def __resolve_link_type(value: Optional[str]) -> LinkType:
+        raw = value or ImporterLinkType.RELATED
+        try:
+            return LinkType(value=raw)
+        except Exception:
+            return LinkType(value=ImporterLinkType.RELATED)
+
+    @classmethod
+    def __to_create_links(cls, links: List[Dict[str, Any]]) -> List[CreateLinkApiModel]:
+        return [
+            CreateLinkApiModel(
+                url=link['url'],
+                title=link.get('title'),
+                description=link.get('description'),
+                type=cls.__resolve_link_type(link.get('type')),
+                has_info=True,
+            )
+            for link in links
+        ]
+
+    @classmethod
+    def __to_update_links(cls, links: List[Dict[str, Any]]) -> List[UpdateLinkApiModel]:
+        result = []
+        for link in links:
+            kwargs = {
+                'url': link['url'],
+                'title': link.get('title'),
+                'description': link.get('description'),
+                'type': cls.__resolve_link_type(link.get('type')),
+                'has_info': True,
+            }
+            if link.get('id'):
+                kwargs['id'] = link['id']
+            result.append(UpdateLinkApiModel(**kwargs))
+        return result
 
     def upload_attachment(self, path: str) -> AttachmentPutModel:
         if os.path.isfile(path):
