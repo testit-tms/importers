@@ -1,3 +1,5 @@
+import sys
+
 from .rabbitmq import RabbitMQ
 from .minioreader import MinioReader
 from .parser import Parser
@@ -18,7 +20,7 @@ def console_main():
     api_client = ApiClient(config.get_url(), config.get_private_token(), config.get_cert_validation())
 
     importer = Importer(parser, api_client, config)
-    importer.send_result()
+    return 1 if importer.send_result() else 0
 
 
 def consumer_main():
@@ -39,4 +41,4 @@ def consumer_main():
 
 
 if __name__ == "__main__":
-    console_main()
+    sys.exit(console_main())
