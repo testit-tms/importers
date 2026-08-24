@@ -223,14 +223,11 @@ class ApiClient:
 
     def send_test_result(self, testrun_id: str, model: AutoTestResultsForTestRunModel) -> None:
         """Function sends autotest result to test run"""
-        try:
-            model = HtmlEscapeUtils.escape_html_in_object(model)
-            self.__test_run_api.set_auto_test_results_for_test_run(
-                id=testrun_id,
-                auto_test_results_for_test_run_model=[model])
-            logging.info("Set result passed!")
-        except Exception as exc:
-            logging.error(f"Set result status: {exc}")
+        model = HtmlEscapeUtils.escape_html_in_object(model)
+        self.__test_run_api.set_auto_test_results_for_test_run(
+            id=testrun_id,
+            auto_test_results_for_test_run_model=[model])
+        logging.info("Set result passed!")
 
     def __send_test_results(self, testrun_id: str, test_results: List[AutoTestResultsForTestRunModel]) -> None:
         """Function sends autotest results to test run"""

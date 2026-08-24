@@ -1,4 +1,5 @@
 """The module provides functionality for importing result to TMS"""
+import logging
 import os
 import re
 import dataclasses
@@ -35,34 +36,60 @@ class Importer:
         self.__test_run_tags = config.get_test_run_tags()
         self.__test_run_links = config.get_test_run_links()
 
-    def send_result(self) -> None:
+    def send_result(self) -> int:
         """Function imports result to TMS."""
         data_tests, data_containers = self.__parser.parse_results()
         data_fixtures: Dict = self.__form_fixtures(data_containers)
+        error_count = self.__parser.get_error_count()
 
         self.__set_test_run()
         status_codes = self.__api_client.get_status_codes(self.__project_id)
 
         for history_id in data_tests:  # str
             test_results = data_tests[history_id]
-            sorted_test_results_by_start = sorted(
-                test_results, key=lambda test_result: test_result[('' if 'uuid' in test_result else '@') + 'start'])
+            test_results_with_start = []
+
+            for test_result in test_results:
+                try:
+                    prefix = '' if 'uuid' in test_result else '@'
+                    test_results_with_start.append((int(test_result[prefix + 'start']), test_result))
+                except Exception as exc:
+                    error_count += 1
+                    logging.error('Prepare result "%s" status: %s', history_id, exc)
+
+            sorted_test_results_by_start = [
+                item[1] for item in sorted(test_results_with_start, key=lambda item: item[0])]
 
             if self.__include_reruns:
-                self.__send_test_results(sorted_test_results_by_start, data_fixtures, history_id, status_codes)
+                error_count += self.__send_test_results(
+                    sorted_test_results_by_start, data_fixtures, history_id, status_codes)
 
                 continue
 
-            self.__send_test_results(sorted_test_results_by_start[-1:], data_fixtures, history_id, status_codes)
+            error_count += self.__send_test_results(
+                sorted_test_results_by_start[-1:], data_fixtures, history_id, status_codes)
+
+        if error_count:
+            logging.error('Import completed with %s error(s)', error_count)
+
+        return error_count
 
     def __send_test_results(
             self,
             test_results: List[Dict],
             data_fixtures: Dict,
             history_id: str,
-            status_codes: List[str]) -> None:
+            status_codes: List[str]) -> int:
+        error_count = 0
+
         for test_result in test_results:
-            self.__send_test_result(test_result, data_fixtures, history_id, status_codes)
+            try:
+                self.__send_test_result(test_result, data_fixtures, history_id, status_codes)
+            except Exception as exc:
+                error_count += 1
+                logging.error('Import result "%s" status: %s', history_id, exc)
+
+        return error_count
 
     def __send_test_result(self, test: Dict, data_fixtures: Dict, history_id: str, status_codes: List[str]) -> None:
         test_result = self.__form_test_result(test, data_fixtures, history_id)
