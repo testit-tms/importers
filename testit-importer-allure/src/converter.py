@@ -1,26 +1,28 @@
 from typing import Dict, List
 from datetime import datetime
 
-from testit_api_client.models import (
-    AutoTestModel,
-    AutoTestCreateApiModel,
-    CreateAutoTestRequest,
-    AutoTestUpdateApiModel,
-    UpdateAutoTestRequest,
-    AutoTestStepApiModel,
-    AvailableTestResultOutcome,
-    AutoTestSearchApiModelFilter,
-    AutoTestSearchApiModelIncludes,
-    ApiV2AutoTestsSearchPostRequest,
-    LinkPostModel,
-    LinkCreateApiModel,
-    LinkUpdateApiModel,
-    LinkType,
-    AutoTestResultsForTestRunModel,
-    AttachmentPutModelAutoTestStepResultsModel,
-    LabelApiModel,
-    TestStatusType,
+from adapters_api.model.adapters_auto_tests_post_request import AdaptersAutoTestsPostRequest
+from adapters_api.model.adapters_auto_tests_put_request import AdaptersAutoTestsPutRequest
+from adapters_api.model.adapters_auto_tests_search_post_request import (
+    AdaptersAutoTestsSearchPostRequest,
 )
+from adapters_api.model.attachment_put_model_auto_test_step_results_model import (
+    AttachmentPutModelAutoTestStepResultsModel,
+)
+from adapters_api.model.auto_test_create_api_model import AutoTestCreateApiModel
+from adapters_api.model.auto_test_model import AutoTestModel
+from adapters_api.model.auto_test_results_for_test_run_model import AutoTestResultsForTestRunModel
+from adapters_api.model.auto_test_search_api_model_filter import AutoTestSearchApiModelFilter
+from adapters_api.model.auto_test_search_api_model_includes import AutoTestSearchApiModelIncludes
+from adapters_api.model.auto_test_step_api_model import AutoTestStepApiModel
+from adapters_api.model.auto_test_update_api_model import AutoTestUpdateApiModel
+from adapters_api.model.available_test_result_outcome import AvailableTestResultOutcome
+from adapters_api.model.label_api_model import LabelApiModel
+from adapters_api.model.link_create_api_model import LinkCreateApiModel
+from adapters_api.model.link_post_model import LinkPostModel
+from adapters_api.model.link_type import LinkType
+from adapters_api.model.link_update_api_model import LinkUpdateApiModel
+from adapters_api.model.test_status_type import TestStatusType
 
 from .models import Link, StepResult, TestResult
 
@@ -31,7 +33,7 @@ class Converter:
             cls,
             project_id: str,
             external_id: str
-    ) -> ApiV2AutoTestsSearchPostRequest:
+    ) -> AdaptersAutoTestsSearchPostRequest:
         autotests_filter = AutoTestSearchApiModelFilter(
             project_ids=[project_id],
             external_ids=[external_id],
@@ -41,7 +43,9 @@ class Converter:
             include_links=False,
             include_labels=False)
 
-        return ApiV2AutoTestsSearchPostRequest(filter=autotests_filter, includes=autotests_includes)
+        return AdaptersAutoTestsSearchPostRequest(
+            filter=autotests_filter,
+            includes=autotests_includes)
 
     @classmethod
     def test_result_to_autotest_post_model(
@@ -68,8 +72,8 @@ class Converter:
             cls,
             test_result: TestResult,
             project_id: str
-    ) -> CreateAutoTestRequest:
-        return CreateAutoTestRequest(
+    ) -> AdaptersAutoTestsPostRequest:
+        return AdaptersAutoTestsPostRequest(
             external_id=test_result.get_external_id(),
             project_id=project_id,
             name=test_result.get_title(),
@@ -109,8 +113,8 @@ class Converter:
             cls,
             test_result: TestResult,
             project_id: str
-    ) -> UpdateAutoTestRequest:
-        return UpdateAutoTestRequest(
+    ) -> AdaptersAutoTestsPutRequest:
+        return AdaptersAutoTestsPutRequest(
             external_id=test_result.get_external_id(),
             project_id=project_id,
             name=test_result.get_title(),
@@ -153,8 +157,8 @@ class Converter:
             cls,
             auto_test_model: AutoTestModel,
             project_id: str
-    ) -> UpdateAutoTestRequest:
-        return UpdateAutoTestRequest(
+    ) -> AdaptersAutoTestsPutRequest:
+        return AdaptersAutoTestsPutRequest(
             external_id=auto_test_model.external_id,
             project_id=project_id,
             name=auto_test_model.name,
@@ -229,7 +233,6 @@ class Converter:
                 title=link.get_title(),
                 type=LinkType(value=link.get_link_type()),
                 description=link.get_description(),
-                has_info=True,
             )
         else:
             return LinkCreateApiModel(
@@ -237,7 +240,6 @@ class Converter:
                 title=link.get_title(),
                 type=LinkType(value='Related'),
                 description=link.get_description(),
-                has_info=True,
             )
 
     @staticmethod
@@ -256,7 +258,6 @@ class Converter:
             title=title,
             type=url_type,
             description=description,
-            has_info=True,
         )
 
     @classmethod

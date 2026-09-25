@@ -6,7 +6,7 @@ import dataclasses
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from testit_api_client.model.attachment_put_model import AttachmentPutModel
+from adapters_api.model.attachment_put_model import AttachmentPutModel
 
 from .apiclient import ApiClient
 from .configurator import Configurator
@@ -324,11 +324,8 @@ class Importer:
 
     @staticmethod
     def __parse_xml(data, key, value):
-        if key in data:
-            if type(data[key]) != List:
-                data = [data[key]]
-            else:
-                data = data[key]
+        if isinstance(data, dict) and key in data:
+            data = data[key] if isinstance(data[key], list) else [data[key]]
 
         prefix = '' if data and value in data[0] else '@'
 
