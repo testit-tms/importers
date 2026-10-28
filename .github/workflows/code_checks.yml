@@ -5,7 +5,7 @@ on:
 
 jobs:
   install:
-    name: Check (${{ matrix.os }}, ${{ matrix.package }})
+    name: ${{ matrix.os }}, ${{ matrix.package }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -58,7 +58,7 @@ jobs:
         run: flake8 .
 
   tests:
-    name: Unit tests / ${{ matrix.package }}
+    name: Unit-tests / ${{ matrix.package }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
