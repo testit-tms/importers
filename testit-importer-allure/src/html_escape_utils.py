@@ -113,7 +113,7 @@ class HtmlEscapeUtils:
         return obj_list
 
     @staticmethod
-    def _process_object_attributes(obj: Any) -> None:
+    def _process_object_attributes(obj: Any) -> None:  # noqa: C901
         """
         Process all attributes of an object for HTML escaping.
         """

@@ -121,7 +121,7 @@ class Importer:
             Converter.test_result_to_testrun_result_post_model(test_result, self.__configuration_id, status_codes)
         )
 
-    def __form_test_result(self, test: Dict, data_fixtures: Dict, history_id: str) -> TestResult:
+    def __form_test_result(self, test: Dict, data_fixtures: Dict, history_id: str) -> TestResult:  # noqa: C901
         prefix = '' if 'uuid' in test else '@'
         test_result = TestResult()
 

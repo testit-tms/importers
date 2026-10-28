@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Tuple, Dict, List, BinaryIO
+from typing import Dict, List
 
 
 class StepResult:
