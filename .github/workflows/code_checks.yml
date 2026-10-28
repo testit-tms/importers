@@ -31,7 +31,7 @@ jobs:
           testit --help
 
   flake8:
-    name: Check flake8 / ${{ matrix.package }}
+    name: flake8 / ${{ matrix.package }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -58,7 +58,7 @@ jobs:
         run: flake8 .
 
   tests:
-    name: Unit-tests / ${{ matrix.package }}
+    name: unit tests / ${{ matrix.package }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
