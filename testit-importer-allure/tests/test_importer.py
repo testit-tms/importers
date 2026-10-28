@@ -121,6 +121,11 @@ class ImporterLogicTests(unittest.TestCase):
         self.assertEqual(test_result.get_classname(), 'Sub')
         self.assertEqual(len(test_result.get_labels()), 4)
         self.assertTrue(any(label.name == 'severity::smoke' for label in test_result.get_labels()))
+        self.assertEqual(
+            test_result.get_tags(),
+            [label.name for label in test_result.get_labels()],
+        )
+        self.assertIn('severity::smoke', test_result.get_tags())
 
     def test_form_links_valid(self):
         importer = _importer()
