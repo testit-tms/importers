@@ -24,6 +24,7 @@ class TestResult:
     __links: List[Link] = []
     __attachments: List[str] = []
     __labels: List[str] = []
+    __tags: List[str] = []
     __work_item_ids: List[str] = []
     __parameters: Dict = {}
     __is_flaky: bool = False
@@ -171,6 +172,14 @@ class TestResult:
 
     def get_labels(self) -> List:
         return self.__labels
+
+    def set_tags(self, tags: List[str]):
+        self.__tags = tags
+
+        return self
+
+    def get_tags(self) -> List[str]:
+        return self.__tags
 
     def set_work_item_ids(self, work_item_ids: List):
         self.__work_item_ids = work_item_ids

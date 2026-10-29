@@ -32,6 +32,7 @@ def _test_result(**overrides) -> TestResult:
     result.set_teardown_results(overrides.get('teardown_results', []))
     result.set_links(overrides.get('links', []))
     result.set_labels(overrides.get('labels', []))
+    result.set_tags(overrides.get('tags', []))
     result.set_attachments(overrides.get('attachments', []))
     result.set_parameters(overrides.get('parameters', {}))
     result.set_is_flaky(overrides.get('is_flaky', False))
@@ -56,7 +57,11 @@ class ConverterTests(unittest.TestCase):
 
     def test_test_result_to_create_autotest_request(self):
         link = Link().set_url('https://example.com').set_title('doc').set_link_type('Related')
-        result = _test_result(links=[link], labels=[Converter.label_to_label_post_model('a::b')])
+        result = _test_result(
+            links=[link],
+            labels=[Converter.label_to_label_post_model('a::b')],
+            tags=['a::b'],
+        )
 
         model = Converter.test_result_to_create_autotest_request(result, 'project-1')
 
@@ -70,15 +75,24 @@ class ConverterTests(unittest.TestCase):
         self.assertIsInstance(model.links[0], LinkCreateApiModel)
         self.assertEqual(model.links[0].url, 'https://example.com')
         self.assertNotIn('hasInfo', model.links[0].to_dict())
+        self.assertEqual(model.tags, ['a::b'])
 
     def test_test_result_to_update_autotest_request(self):
-        result = _test_result(is_flaky=True)
+        result = _test_result(
+            is_flaky=True,
+            labels=[
+                Converter.label_to_label_post_model('severity::smoke'),
+                Converter.label_to_label_post_model('feature::login'),
+            ],
+            tags=['severity::smoke', 'feature::login'],
+        )
         model = Converter.test_result_to_update_autotest_request(result, 'project-1')
 
         self.assertIsInstance(model, AdaptersAutoTestsPutRequest)
         self.assertEqual(model.external_id, 'ext-1')
         self.assertTrue(model.is_flaky)
         self.assertFalse(model.reset_layer)
+        self.assertEqual(model.tags, ['severity::smoke', 'feature::login'])
 
     def test_test_result_to_testrun_result_sets_status_code_when_known(self):
         result = _test_result(outcome='custom_pass')

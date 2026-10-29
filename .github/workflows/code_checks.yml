@@ -4,8 +4,8 @@ on:
   - pull_request
 
 jobs:
-  linters:
-    name: Auto check
+  install:
+    name: ${{ matrix.os }}, ${{ matrix.package }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -26,18 +26,59 @@ jobs:
         working-directory: ${{ matrix.package }}
         run: |
           python -m pip install --upgrade pip
-          pip install .
+          pip install -e .
           python -c "import testit_importer_allure"
           testit --help
 
-      # - name: Run flake8 [${{ matrix.package }}]
-      #   working-directory: ${{ matrix.package }}
-      #   run: flake8 .
+  flake8:
+    name: flake8 / ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [
+            testit-importer-allure
+        ]
+    steps:
+      - uses: actions/checkout@v3
 
-      # - name: Run mypy [${{ matrix.package }}]
-      #   working-directory: ${{ matrix.package }}
-      #   run: mypy .
+      - name: Install Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
-      # - name: Tests [${{ matrix.package }}]
-      #   working-directory: ${{ matrix.package }}
-      #   run: pytest --basetemp=tmp
+      - name: Install ${{ matrix.package }} and flake8
+        working-directory: ${{ matrix.package }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install flake8
+
+      - name: Run flake8
+        working-directory: ${{ matrix.package }}
+        run: flake8 .
+
+  tests:
+    name: unit tests / ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [
+            testit-importer-allure
+        ]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install ${{ matrix.package }}
+        working-directory: ${{ matrix.package }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Run tests
+        working-directory: ${{ matrix.package }}
+        run: python -m unittest discover -s tests -v
