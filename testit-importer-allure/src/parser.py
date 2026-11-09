@@ -1,4 +1,5 @@
 """The module provides functionality for parsing result files"""
+import logging
 import os
 import json
 import hashlib
@@ -17,15 +18,24 @@ class Parser:
         self.__data_tests = {}
         self.__data_containers = {}
         self.__use_name = use_name
+        self.__error_count = 0
 
     def parse_results(self) -> Tuple[Dict, Dict]:
         """Function parses results"""
         files = self.__reader.get_all_files()
 
         for file in files:
-            self.__read(file)
+            try:
+                self.__read(file)
+            except Exception as exc:
+                self.__error_count += 1
+                logging.error('Parse file "%s" status: %s', file, exc)
 
         return self.__data_tests, self.__data_containers
+
+    def get_error_count(self) -> int:
+        """Function returns the number of parsing errors."""
+        return self.__error_count
 
     def parse_attachment(self, file_name: str) -> BinaryIO:
         """Function parses attachment"""
@@ -79,20 +89,20 @@ class Parser:
             return
 
         # fallback for result data
-        try:
-            self.__read_result_data(result_data)
-        except Exception as e:
-            print(e)
+        self.__read_result_data(result_data)
 
     def __read_xml(self, file_dto: FileDto) -> None:
         testsuite = xmltodict.parse(file_dto.file.read())
         testcases_data = testsuite['ns2:test-suite']['test-cases']['test-case']
 
-        if isinstance(testcases_data, list):
-            for testcase in testcases_data:
+        testcases = testcases_data if isinstance(testcases_data, list) else [testcases_data]
+
+        for testcase in testcases:
+            try:
                 self.__read_xml_testcase(testcase)
-        else:
-            self.__read_xml_testcase(testcases_data)
+            except Exception as exc:
+                self.__error_count += 1
+                logging.error('Parse testcase in file "%s" status: %s', file_dto.name, exc)
 
     def __read_xml_testcase(self, testcase: Dict) -> None:
         if testcase['title'] and testcase['name']:

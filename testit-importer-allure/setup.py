@@ -1,7 +1,6 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
-VERSION = "1.17.3.post580"
-
+VERSION = "1.17.4.post600"
 setup(
     name='testit-importer-allure',
     version=VERSION,
@@ -22,13 +21,22 @@ setup(
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
     ],
+    packages=[
+        'testit_importer_allure',
+        'testit_importer_allure.models',
+    ] + find_packages(where='src', include=['adapters_api*']),
+    package_dir={
+        'testit_importer_allure': 'src',
+        'testit_importer_allure.models': 'src/models',
+        'adapters_api': 'src/adapters_api',
+    },
     package_data={'testit_importer_allure': ['../connection_config.ini']},
-    package_dir={'testit_importer_allure': 'src'},
     install_requires=[
-        'testit-api-client==7.6.1.post580',
+        'urllib3',
+        'python-dateutil',
         'xmltodict',
         'minio',
-        'pika'
+        'pika',
     ],
     entry_points={
         'console_scripts': [
