@@ -3,7 +3,7 @@ import logging
 import os
 import json
 import hashlib
-from typing import Tuple, Dict, List, BinaryIO
+from typing import Tuple, Dict, BinaryIO
 import xmltodict
 from .filedto import FileDto
 from .reader import Reader
@@ -58,7 +58,7 @@ class Parser:
         if 'children' in result_data:
             self.__data_containers[result_data['uuid']] = result_data
 
-    def __read_result_data(self, result_data: Dict, use_name = False) -> None:
+    def __read_result_data(self, result_data: Dict, use_name=False) -> None:
         if use_name and 'name' in result_data:
             result_data['historyId'] = self.__get_hash(result_data['name'])
         else:

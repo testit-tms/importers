@@ -1,10 +1,6 @@
-import sys
 import unittest
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-
-from test_run_meta import merge_links, merge_tags, parse_links, parse_tags  # noqa: E402
+from testit_importer_allure.test_run_meta import merge_links, merge_tags, parse_links, parse_tags
 
 
 class TestRunMetaTests(unittest.TestCase):

@@ -310,7 +310,7 @@ class Configurator:
             help='Secret key of Minio'
         )
 
-    def __load_env_properties(self):
+    def __load_env_properties(self):  # noqa: C901
         if 'TMS_HOST' in os.environ.keys():
             self.config.set(CONFIG_SECTION, CONFIG_URL, os.environ.get('TMS_HOST'))
 
@@ -323,7 +323,7 @@ class Configurator:
         if 'TMS_CONFIGURATION_ID' in os.environ.keys():
             self.config.set(CONFIG_SECTION, CONFIG_CONFIGURATION_ID, os.environ.get('TMS_CONFIGURATION_ID'))
 
-        if f'TMS_CERT_VALIDATION' in os.environ.keys():
+        if 'TMS_CERT_VALIDATION' in os.environ.keys():
             self.config.set(CONFIG_SECTION, CONFIG_CERT_VALIDATION, os.environ.get('TMS_CERT_VALIDATION').lower())
 
         if 'TMS_TEST_RUN_TAGS' in os.environ.keys():
@@ -353,11 +353,12 @@ class Configurator:
         if 'RABBITMQ_EXCHANGE' in os.environ.keys():
             self.config.set(RABBITMQ_CONFIG_SECTION, RABBITMQ_CONFIG_EXCHANGE, os.environ.get('RABBITMQ_EXCHANGE'))
 
-    def __parse_args(self):
+    def __parse_args(self):  # noqa: C901
         args = self.parser.parse_args()
         if args.set_url:
             if not re.fullmatch(
-                    r"^(ht|f)tp(s?)\:\/\/[0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*(:(0-9)*)*(\/?)([a-zA-Z0-9\-\.\?\,\'\/\\\+&amp;%\$#_]*)?$",
+                    r"^(ht|f)tp(s?)\:\/\/[0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*(:(0-9)*)*"
+                    r"(\/?)([a-zA-Z0-9\-\.\?\,\'\/\\\+&amp;%\$#_]*)?$",
                     args.set_url):
                 print('The wrong URL!')
                 raise SystemExit

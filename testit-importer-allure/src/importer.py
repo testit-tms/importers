@@ -121,7 +121,7 @@ class Importer:
             Converter.test_result_to_testrun_result_post_model(test_result, self.__configuration_id, status_codes)
         )
 
-    def __form_test_result(self, test: Dict, data_fixtures: Dict, history_id: str) -> TestResult:
+    def __form_test_result(self, test: Dict, data_fixtures: Dict, history_id: str) -> TestResult:  # noqa: C901
         prefix = '' if 'uuid' in test else '@'
         test_result = TestResult()
 
@@ -255,6 +255,7 @@ class Importer:
     def __set_data_from_labels(self, test_result: TestResult, allure_labels: List) -> None:
         labels_dictionary = {}
         labels = []
+        tags = []
         work_item_ids = []
 
         if allure_labels:
@@ -264,9 +265,9 @@ class Importer:
                 if label[prefix + 'name'] == 'testcase':
                     work_item_ids.append(label[prefix + 'value'])
                 else:
-                    labels.append(
-                        Converter.label_to_label_post_model(
-                            f"{label[prefix + 'name']}::{label[prefix + 'value']}"))
+                    tag = f"{label[prefix + 'name']}::{label[prefix + 'value']}"
+                    tags.append(tag)
+                    labels.append(Converter.label_to_label_post_model(tag))
 
                     labels_dictionary[label[prefix + 'name']] = label[prefix + 'value']
 
@@ -276,6 +277,7 @@ class Importer:
 
         test_result \
             .set_labels(labels) \
+            .set_tags(tags) \
             .set_namespace(main_suites_str) \
             .set_classname(sub_suite) \
             .set_work_item_ids(work_item_ids)

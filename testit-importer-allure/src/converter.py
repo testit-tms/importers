@@ -64,7 +64,8 @@ class Converter:
             classname=test_result.get_classname(),
             description=test_result.get_description(),
             links=cls.links_to_links_create_api_model(test_result.get_links()),
-            labels=test_result.get_labels()
+            labels=test_result.get_labels(),
+            tags=test_result.get_tags(),
         )
 
     @classmethod
@@ -84,7 +85,8 @@ class Converter:
             classname=test_result.get_classname(),
             description=test_result.get_description(),
             links=cls.links_to_links_create_api_model(test_result.get_links()),
-            labels=test_result.get_labels()
+            labels=test_result.get_labels(),
+            tags=test_result.get_tags(),
         )
 
     @classmethod
@@ -105,6 +107,7 @@ class Converter:
             description=test_result.get_description(),
             links=cls.links_to_links_put_model(test_result.get_links()),
             labels=test_result.get_labels(),
+            tags=test_result.get_tags(),
             is_flaky=test_result.get_is_flaky(),
         )
 
@@ -127,6 +130,7 @@ class Converter:
             description=test_result.get_description(),
             links=cls.links_to_links_put_model(test_result.get_links()),
             labels=test_result.get_labels(),
+            tags=test_result.get_tags(),
             is_flaky=test_result.get_is_flaky(),
         )
 

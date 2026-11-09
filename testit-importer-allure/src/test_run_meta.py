@@ -37,7 +37,7 @@ def parse_tags(raw: Optional[str]) -> Optional[List[str]]:
     return tags or None
 
 
-def parse_links(raw: Optional[str]) -> Optional[List[Dict[str, Any]]]:
+def parse_links(raw: Optional[str]) -> Optional[List[Dict[str, Any]]]:  # noqa: C901
     """Parse JSON array of link objects. Empty/omitted -> None."""
     if raw is None:
         return None
