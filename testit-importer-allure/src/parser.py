@@ -74,6 +74,13 @@ class Parser:
         self.__data_tests[str(result_data['historyId'])].append(result_data)
 
     def __read_json(self, file_dto: FileDto) -> None:
+        if file_dto.name.endswith('-result.json'):
+            is_result = True
+        elif file_dto.name.endswith('-container.json'):
+            is_result = False
+        else:
+            return
+
         content = file_dto.file.read()
 
         if not content:
@@ -81,15 +88,10 @@ class Parser:
 
         result_data: Dict = json.loads(content)
 
-        if 'result' in file_dto.name:
+        if is_result:
             self.__read_result_data(result_data, self.__use_name)
-            return
-        if 'container' in file_dto.name:
+        else:
             self.__read_container_data(result_data)
-            return
-
-        # fallback for result data
-        self.__read_result_data(result_data)
 
     def __read_xml(self, file_dto: FileDto) -> None:
         testsuite = xmltodict.parse(file_dto.file.read())
