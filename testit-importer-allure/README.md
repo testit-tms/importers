@@ -54,6 +54,8 @@ Use the command `testit --resultsdir allure-results --testrunname <name>` to spe
 <br>Or use the command `testit --resultsdir allure-results --testrunid <id>` to specify the directory with Allure report results and id of test run in TMS instance.
 <br>**Important:** This command initiates the import.
 
+By default Allure labels are imported as tags and labels in `name::value` form. Use `--simplifiedtags` / `-st` to import both as label values only (without the `name::` prefix).
+
 ### Test run tags and links
 
 You can attach **test run** tags and links (e.g. CI job URL) so they are visible in TMS while the run is still in progress.
