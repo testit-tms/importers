@@ -19,6 +19,7 @@ CONFIG_NAME = 'connection_config.ini'
 ALLURE_IGNORE_PACKAGE_NAME = 'ignorePackageName'
 CONFIG_INCLUDE_RERUNS = 'includeReruns'
 ALLURE_USE_NAME = 'useName'
+ALLURE_SIMPLIFIED_TAGS = 'simplifiedTags'
 
 RABBITMQ_CONFIG_SECTION = 'rabbitmq'
 RABBITMQ_CONFIG_URL = 'host'
@@ -87,6 +88,10 @@ class Configurator:
     def get_use_name(self):
         """Function returns use name."""
         return self.config.get(CONFIG_SECTION, ALLURE_USE_NAME)
+
+    def get_simplified_tags(self):
+        """Function returns simplified tags."""
+        return self.config.get(CONFIG_SECTION, ALLURE_SIMPLIFIED_TAGS)
 
     def get_test_run_tags(self) -> Optional[List[str]]:
         """Function returns test run tags."""
@@ -245,6 +250,13 @@ class Configurator:
             metavar="True or False",
             default=False,
             help='Use name to determine test externalId'
+        )
+        self.parser.add_argument(
+            '-st',
+            '--simplifiedtags',
+            action='store_true',
+            dest="simplified_tags",
+            help='Use Allure label values as tags and labels without name:: prefix'
         )
         self.parser.add_argument(
             '-rh',
@@ -408,6 +420,7 @@ class Configurator:
         self.config.set(CONFIG_SECTION, ALLURE_IGNORE_PACKAGE_NAME, args.ignore_package_name)
         self.config.set(CONFIG_SECTION, CONFIG_INCLUDE_RERUNS, args.include_reruns)
         self.config.set(CONFIG_SECTION, ALLURE_USE_NAME, args.use_name)
+        self.config.set(CONFIG_SECTION, ALLURE_SIMPLIFIED_TAGS, args.simplified_tags)
 
         if args.alluredir:
             self.path_to_results = args.alluredir
