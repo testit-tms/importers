@@ -15,6 +15,7 @@ def _config(
         testrun_name=None,
         ignore_package_name=False,
         include_reruns=False,
+        simplified_tags=False,
         path='/results',
         tags=None,
         links=None):
@@ -25,6 +26,7 @@ def _config(
     config.specified_testrun_name = testrun_name
     config.get_ignore_package_name.return_value = ignore_package_name
     config.get_include_reruns.return_value = include_reruns
+    config.get_simplified_tags.return_value = simplified_tags
     config.get_path.return_value = path
     config.get_test_run_tags.return_value = tags
     config.get_test_run_links.return_value = links
@@ -126,6 +128,30 @@ class ImporterLogicTests(unittest.TestCase):
             [label.name for label in test_result.get_labels()],
         )
         self.assertIn('severity::smoke', test_result.get_tags())
+
+    def test_set_data_from_labels_simplified_tags_uses_values_only(self):
+        importer = _importer(simplified_tags=True)
+        test_result = TestResult()
+
+        labels = {
+            'label': [
+                {'name': 'testcase', 'value': 'WI-1'},
+                {'name': 'parentSuite', 'value': 'Root'},
+                {'name': 'suite', 'value': 'Child'},
+                {'name': 'subSuite', 'value': 'Sub'},
+                {'name': 'severity', 'value': 'smoke'},
+            ]
+        }
+
+        importer._Importer__set_data_from_labels(test_result, labels)
+
+        self.assertEqual(test_result.get_work_item_ids(), ['WI-1'])
+        self.assertEqual(test_result.get_namespace(), 'Root.Child')
+        self.assertEqual(test_result.get_classname(), 'Sub')
+        self.assertTrue(any(label.name == 'smoke' for label in test_result.get_labels()))
+        self.assertFalse(any(label.name == 'severity::smoke' for label in test_result.get_labels()))
+        self.assertIn('smoke', test_result.get_tags())
+        self.assertNotIn('severity::smoke', test_result.get_tags())
 
     def test_form_links_valid(self):
         importer = _importer()

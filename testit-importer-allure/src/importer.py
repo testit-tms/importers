@@ -32,6 +32,7 @@ class Importer:
         self.__configuration_id = config.get_configuration_id()
         self.__ignore_namespace_name = config.get_ignore_package_name()
         self.__include_reruns = config.get_include_reruns()
+        self.__simplified_tags = config.get_simplified_tags()
         self.__path_to_results = config.get_path()
         self.__test_run_tags = config.get_test_run_tags()
         self.__test_run_links = config.get_test_run_links()
@@ -265,9 +266,10 @@ class Importer:
                 if label[prefix + 'name'] == 'testcase':
                     work_item_ids.append(label[prefix + 'value'])
                 else:
-                    tag = f"{label[prefix + 'name']}::{label[prefix + 'value']}"
-                    tags.append(tag)
-                    labels.append(Converter.label_to_label_post_model(tag))
+                    full = f"{label[prefix + 'name']}::{label[prefix + 'value']}"
+                    value = label[prefix + 'value'] if self.__simplified_tags else full
+                    tags.append(value)
+                    labels.append(Converter.label_to_label_post_model(value))
 
                     labels_dictionary[label[prefix + 'name']] = label[prefix + 'value']
 
