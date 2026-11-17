@@ -153,6 +153,28 @@ class ImporterLogicTests(unittest.TestCase):
         self.assertIn('smoke', test_result.get_tags())
         self.assertNotIn('severity::smoke', test_result.get_tags())
 
+    def test_set_data_from_labels_simplified_tags_deduplicates_values(self):
+        importer = _importer(simplified_tags=True)
+        test_result = TestResult()
+
+        labels = {
+            'label': [
+                {'name': 'parentSuite', 'value': 'Root'},
+                {'name': 'suite', 'value': 'Child'},
+                {'name': 'severity', 'value': 'smoke'},
+                {'name': 'feature', 'value': 'smoke'},
+            ]
+        }
+
+        importer._Importer__set_data_from_labels(test_result, labels)
+
+        self.assertEqual(test_result.get_namespace(), 'Root.Child')
+        self.assertEqual(test_result.get_tags().count('smoke'), 1)
+        self.assertEqual(
+            len([label for label in test_result.get_labels() if label.name == 'smoke']),
+            1,
+        )
+
     def test_form_links_valid(self):
         importer = _importer()
         links = importer._Importer__form_links([
