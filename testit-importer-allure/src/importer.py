@@ -268,10 +268,13 @@ class Importer:
                 else:
                     full = f"{label[prefix + 'name']}::{label[prefix + 'value']}"
                     value = label[prefix + 'value'] if self.__simplified_tags else full
+                    labels_dictionary[label[prefix + 'name']] = label[prefix + 'value']
+
+                    if self.__simplified_tags and value in tags:
+                        continue
+
                     tags.append(value)
                     labels.append(Converter.label_to_label_post_model(value))
-
-                    labels_dictionary[label[prefix + 'name']] = label[prefix + 'value']
 
         main_suites = self.__get_main_suites(labels_dictionary)
         sub_suite = self.__get_sub_suite(labels_dictionary)
